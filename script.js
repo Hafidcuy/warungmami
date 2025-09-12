@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.querySelector(".navbar input[type='text']");
   const cards = document.querySelectorAll(".card");
+  const judul = document.querySelectorALL(".judul")
 
   searchInput.addEventListener("input", () => {
     const searchValue = searchInput.value.toLowerCase();
@@ -14,6 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         card.style.display = "none";
       }
+      const nama = judul.getAttribute(".judul").toLowerCase();
+        if (nama.includes(input)) {
+          judul.style.display = "block";
+        } else {
+          judul.style.display = "none";
     });
   });
 });
+
