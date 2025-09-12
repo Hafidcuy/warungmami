@@ -1,42 +1,19 @@
-function searchItems() {
-  const input = document.getElementById("searchInput").value.toLowerCase();
+document.addEventListener("DOMContentLoaded", () => {
+  const searchInput = document.querySelector(".navbar input[type='text']");
   const cards = document.querySelectorAll(".card");
-  const judul = document.querySelectorAll(".judul");
 
-  let adaMinuman = false;
-  let adaMakanan = false;
+  searchInput.addEventListener("input", () => {
+    const searchValue = searchInput.value.toLowerCase();
 
-  // kalau input kosong → tampilkan semua
-  if (input.trim() === "") {
     cards.forEach(card => {
-      card.style.display = "inline-block";
+      const title = card.querySelector("h3").textContent.toLowerCase();
+      const desc = card.querySelector("p") ? card.querySelector("p").textContent.toLowerCase() : "";
+
+      if (title.includes(searchValue) || desc.includes(searchValue)) {
+        card.style.display = "flex";
+      } else {
+        card.style.display = "none";
+      }
     });
-    judul.forEach(j => {
-      j.style.display = "block";
-    });
-    return; // stop fungsi biar ga lanjut
-  }
-
-  // filter kalau ada input
-  cards.forEach(card => {
-    const nama = card.getAttribute("data-nama");
-
-    if (nama.includes(input)) {
-      card.style.display = "inline-block";
-      if (card.closest("#produk-minuman")) adaMinuman = true;
-      if (card.closest("#produk-makanan")) adaMakanan = true;
-    } else {
-      card.style.display = "none";
-    }
   });
-
-  // atur visibilitas judul sesuai hasil
-  judul.forEach(j => {
-    if (j.textContent.toLowerCase().includes("minuman")) {
-      j.style.display = adaMinuman ? "block" : "none";
-    }
-    if (j.textContent.toLowerCase().includes("makanan")) {
-      j.style.display = adaMakanan ? "block" : "none";
-    }
-  });
-}
+});
