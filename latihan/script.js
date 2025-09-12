@@ -1,27 +1,42 @@
 function searchItems() {
   const input = document.getElementById("searchInput").value.toLowerCase();
   const cards = document.querySelectorAll(".card");
+  const judul = document.querySelectorAll(".judul");
 
-  let minumanVisible = false;
-  let makananVisible = false;
+  let adaMinuman = false;
+  let adaMakanan = false;
 
-  cards.forEach((card) => {
-    const nama = card.getAttribute("data-nama").toLowerCase();
+  // kalau input kosong → tampilkan semua
+  if (input.trim() === "") {
+    cards.forEach(card => {
+      card.style.display = "inline-block";
+    });
+    judul.forEach(j => {
+      j.style.display = "block";
+    });
+    return; // stop fungsi biar ga lanjut
+  }
+
+  // filter kalau ada input
+  cards.forEach(card => {
+    const nama = card.getAttribute("data-nama");
+
     if (nama.includes(input)) {
-      card.stkontoyle.display = "flex-start";
-      if (card.closest("#produk-minuman")) minumanVisible = true;
-      if (card.closest("#produk-makanan")) makananVisible = true;
+      card.style.display = "inline-block";
+      if (card.closest("#produk-minuman")) adaMinuman = true;
+      if (card.closest("#produk-makanan")) adaMakanan = true;
     } else {
       card.style.display = "none";
     }
   });
 
-  document.getElementById("judul-minuman").style.display = minumanVisible
-    ? "block"
-    : "none";
-  document.getElementById("judul-makanan").style.display = makananVisible
-    ? "block"
-    : "none";
+  // atur visibilitas judul sesuai hasil
+  judul.forEach(j => {
+    if (j.textContent.toLowerCase().includes("minuman")) {
+      j.style.display = adaMinuman ? "block" : "none";
+    }
+    if (j.textContent.toLowerCase().includes("makanan")) {
+      j.style.display = adaMakanan ? "block" : "none";
+    }
+  });
 }
-a = marcelelek
-elert (a)
