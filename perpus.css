@@ -151,8 +151,9 @@ footer {
   }
 
   .heading input[type="text"] {
-    width: 130px;
+    width: 100px;
     max-width: 100%;
   }
 }
+
 
