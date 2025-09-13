@@ -172,7 +172,7 @@ footer {
 }
 
 /* === Responsive === */
-@media (max-width: 60px) {
+@media (max-width: 15px) {
   .header-container {
     flex-direction: row;
     align-items: center;
@@ -197,3 +197,4 @@ footer {
     justify-items: flex-start;
   }
 }
+
