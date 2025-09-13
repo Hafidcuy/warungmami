@@ -172,14 +172,10 @@ footer {
 }
 
 /* === Responsive === */
-@media (max-width: 1px) {
+@media (max-width: -20px) {
   .header-container {
     flex-direction: row;
     align-items: center;
-  }
-
-  .logo h1 {
-    font-size: 5px;
   }
 
   .navbar {
@@ -201,5 +197,6 @@ footer {
     justify-items: flex-start;
   }
 }
+
 
 
