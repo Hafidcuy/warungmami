@@ -148,6 +148,7 @@ footer {
   .heading {
     flex-direction: row;
     font-size: small;
+    gap: 1px;
   }
 
   .heading input[type="text"] {
@@ -155,5 +156,6 @@ footer {
     max-width: 100%;
   }
 }
+
 
 
