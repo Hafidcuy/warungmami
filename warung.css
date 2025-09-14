@@ -11,6 +11,7 @@ body {
   overflow-x: hidden;
   background-image: url('https://www.pixelstalk.net/wp-content/uploads/2016/07/3840x2160-Images-Free-Download.jpg');
   background-size: 100%;
+  background-repeat: no-repeat;
 }
 
 body::-webkit-scrollbar {
@@ -205,6 +206,7 @@ footer {
 title {
   border-radius: 5px;
 }
+
 
 
 
