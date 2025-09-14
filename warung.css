@@ -9,7 +9,7 @@ body {
   background-color: #fff;
   color: #333;
   overflow-x: hidden;
-  background-img: url('https://www.pixelstalk.net/wp-content/uploads/2016/07/3840x2160-Images-Free-Download.jpg');
+  background-image: url('https://www.pixelstalk.net/wp-content/uploads/2016/07/3840x2160-Images-Free-Download.jpg');
 }
 
 body::-webkit-scrollbar {
@@ -204,6 +204,7 @@ footer {
 title {
   border-radius: 5px;
 }
+
 
 
 
