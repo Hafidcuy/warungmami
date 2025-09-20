@@ -196,13 +196,14 @@ footer {
 
   .card {
     width: 55%;
-    justify-items: flex-start;
+    justify-items: center;
   }
 }
 
 title {
   border-radius: 5px;
 }
+
 
 
 
