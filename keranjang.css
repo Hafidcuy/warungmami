@@ -4,9 +4,10 @@ body {
   padding: 30px;
 }
 
-.pokok {
-  align-items: center;
-  display: flex;
+.back-link {
+  text-decoration: none;
+  color: #ff7a00;
+  font-weight: bold;
 }
 
 /* BOX KERANJANG */
@@ -62,4 +63,5 @@ body {
 .checkout-btn:hover {
   background: #e56b00;
 }
+
 
