@@ -6,7 +6,6 @@ body {
 
 .pokok {
   align-items: center;
-  gap: 90px;
   display: flex;
 }
 
@@ -63,3 +62,4 @@ body {
 .checkout-btn:hover {
   background: #e56b00;
 }
+
