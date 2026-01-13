@@ -1,37 +1,35 @@
-/* ===============================
-   CART STORAGE (SUMBER KEBENARAN)
-================================ */
-function getCart() {
-  return JSON.parse(localStorage.getItem("cart")) || [];
-}
+/* =====================
+   CART STORAGE
+===================== */
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-function setCart(cart) {
+/* =====================
+   SAVE CART
+===================== */
+function saveCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-/* ===============================
+/* =====================
    CART COUNT (NAVBAR)
-================================ */
+===================== */
 function updateCartCount() {
   const badge = document.getElementById("cartCount");
   if (!badge) return;
 
-  const cart = getCart();
   const count = cart.reduce((t, i) => t + i.qty, 0);
-
   badge.innerText = count;
   badge.style.display = count > 0 ? "inline-block" : "none";
 }
 
-/* ===============================
-   CART UI (HALAMAN KERANJANG)
-================================ */
+/* =====================
+   CART UI
+===================== */
 function updateCartUI() {
   const items = document.getElementById("cartItems");
   const total = document.getElementById("cartTotal");
   if (!items || !total) return;
 
-  const cart = getCart();
   items.innerHTML = "";
 
   if (!cart.length) {
@@ -42,13 +40,11 @@ function updateCartUI() {
 
   cart.forEach(item => {
     items.innerHTML += `
-      <div class="cart-item">
-        <span>${item.name}</span>
-        <div>
-          <button onclick="changeQty(${item.id}, -1)">−</button>
-          <span>${item.qty}</span>
-          <button onclick="changeQty(${item.id}, 1)">+</button>
-        </div>
+      <div>
+        ${item.name}
+        <button onclick="changeQty(${item.id}, -1)">-</button>
+        ${item.qty}
+        <button onclick="changeQty(${item.id}, 1)">+</button>
       </div>
     `;
   });
@@ -58,41 +54,31 @@ function updateCartUI() {
     cart.reduce((t, i) => t + i.price * i.qty, 0);
 }
 
-/* ===============================
-   ADD / UPDATE ITEM
-================================ */
+/* =====================
+   ADD / CHANGE QTY
+===================== */
 function addToCart(product) {
-  if (!product || product.type !== "warung") return;
-
-  const cart = getCart();
   const item = cart.find(i => i.id === product.id);
+  item ? item.qty++ : cart.push({ ...product, qty: 1 });
 
-  if (item) item.qty++;
-  else cart.push({ ...product, qty: 1 });
-
-  setCart(cart);
+  saveCart();
   updateCartCount();
 }
 
 function changeQty(id, delta) {
-  let cart = getCart();
-
   cart = cart
-    .map(i =>
-      i.id === id ? { ...i, qty: i.qty + delta } : i
-    )
+    .map(i => i.id === id ? { ...i, qty: i.qty + delta } : i)
     .filter(i => i.qty > 0);
 
-  setCart(cart);
+  saveCart();
   updateCartUI();
   updateCartCount();
 }
 
-/* ===============================
-   CHECKOUT (INI KUNCI UTAMA)
-================================ */
+/* =====================
+   CHECKOUT (FINAL)
+===================== */
 function checkout() {
-  const cart = getCart();
   if (!cart.length) {
     alert("Cart kosong");
     return;
@@ -100,18 +86,31 @@ function checkout() {
 
   alert("Checkout berhasil!");
 
-  // 🔥 HAPUS DATA ASLI
+  // 🔥 HAPUS CART
+  cart = [];
   localStorage.removeItem("cart");
 
-  // 🔥 PAKSA UI & BADGE SINKRON
+  // 🔥 TANDAI CART BARU SAJA DIBERSIHKAN
+  localStorage.setItem("cartCleared", "true");
+
   updateCartUI();
   updateCartCount();
 }
 
-/* ===============================
-   AUTO SYNC SEMUA HALAMAN
-================================ */
+/* =====================
+   FORCE REFRESH SAAT KELUAR KERANJANG
+===================== */
 window.addEventListener("pageshow", () => {
-  updateCartCount();
+  if (localStorage.getItem("cartCleared") === "true") {
+    localStorage.removeItem("cartCleared");
+    location.reload(); // 💥 INI KUNCINYA
+  }
+});
+
+/* =====================
+   AUTO LOAD
+===================== */
+document.addEventListener("DOMContentLoaded", () => {
   updateCartUI();
+  updateCartCount();
 });
