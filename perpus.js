@@ -38,4 +38,8 @@ document.querySelector(".search-toggle").addEventListener("click", () => {
 document.addEventListener("DOMContentLoaded", () => {
   updateCartCount();
 });
+window.addEventListener("pageshow", () => {
+  updateCartCount();
+});
+
 
