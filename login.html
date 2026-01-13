@@ -67,20 +67,8 @@
   <button onclick="login()">Masuk</button>
 </div>
 
-<script>
-  function login() {
-    const u = username.value.trim();
-    const p = password.value.trim();
-
-    if (u === "admin" && p === "12345") {
-      localStorage.setItem("isLogin", "true");
-      localStorage.setItem("username", u);
-      location.href = "index.html";
-    } else {
-      error.style.display = "block";
-    }
-  }
-</script>
-
+<script src="login.js"></script>
+  
 </body>
 </html>
+
