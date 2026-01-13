@@ -18,3 +18,4 @@ function login() {
 window.addEventListener("pageshow", () => {
   updateCartCount();
 });
+
