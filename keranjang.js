@@ -155,7 +155,10 @@ function saveLastPage() {
 ===================== */
 document.addEventListener("DOMContentLoaded", () => {
   saveLastPage();
+  checkLogin();   // 🔥 INI KUNCINYA
   loadUser();
   updateCartUI();
   updateCartCount();
 });
+
+
