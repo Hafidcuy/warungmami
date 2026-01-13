@@ -114,15 +114,3 @@ document.addEventListener("DOMContentLoaded", () => {
 function saveLastPage() {
   localStorage.setItem("lastPage", location.pathname);
 }
-
-function checkout() {
-  // 1. Hapus data keranjang
-  localStorage.removeItem("cart");
-
-  // 2. Reset angka cart
-  const cartCount = document.getElementById("cartCount");
-  if (cartCount) cartCount.innerText = "0";
-
-  // 3. Kosongkan tampilan keranjang (jika ada)
-  const cartContainer = document.getElementById("cartItems");
-  if (cartContainer) cartContainer.innerHTML = "";
