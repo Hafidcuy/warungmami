@@ -4,7 +4,7 @@ function login() {
     const errorMsg = document.getElementById("errorMsg");
 
     // LOGIN SEDERHANA (BISA KAMU GANTI)
-    if (username === "admin" && password === "12345") {
+    if (username === "admin" && password === "12345" && username === "rapa" && password === "alasantok") {
       localStorage.setItem("isLogin", "true");
       localStorage.setItem("username", username);
 
@@ -18,4 +18,5 @@ function login() {
 window.addEventListener("pageshow", () => {
   updateCartCount();
 });
+
 
