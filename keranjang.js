@@ -1,7 +1,15 @@
-/* ==== CART DATA ==== */
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+/* ================= CART STATE ================= */
+let cart = [];
 
-/* ==== LOGIN CHECK ==== */
+function loadCart() {
+  cart = JSON.parse(localStorage.getItem("cart")) || [];
+}
+
+function saveCart() {
+  localStorage.setItem("cart", JSON.stringify(cart));
+}
+
+/* ================= LOGIN ================= */
 function checkLogin() {
   if (localStorage.getItem("isLogin") !== "true") {
     alert("Silakan login terlebih dahulu");
@@ -9,24 +17,18 @@ function checkLogin() {
   }
 }
 
-/* ==== USERNAME NAVBAR ==== */
 function loadUser() {
   const el = document.getElementById("navUsername");
   if (el) el.innerText = localStorage.getItem("username") || "Guest";
 }
 
-/* ==== LOGOUT ==== */
 function logout() {
   localStorage.removeItem("isLogin");
   localStorage.removeItem("username");
   location.href = "login.html";
 }
 
-/* ==== CART CORE ==== */
-function saveCart() {
-  localStorage.setItem("cart", JSON.stringify(cart));
-}
-
+/* ================= CART CORE ================= */
 function addToCart(product) {
   if (!product || product.type !== "warung") return;
 
@@ -38,18 +40,33 @@ function addToCart(product) {
   updateCartCount();
 }
 
-function removeFromCart(id) {
-  cart = cart.filter(i => i.id !== id);
+function increaseQty(id) {
+  const item = cart.find(i => i.id === id);
+  if (item) item.qty++;
+  saveCart();
+  updateCartUI();
+  updateCartCount();
+}
+
+function decreaseQty(id) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+
+  item.qty--;
+  if (item.qty <= 0) {
+    cart = cart.filter(i => i.id !== id);
+  }
+
   saveCart();
   updateCartUI();
   updateCartCount();
 }
 
 function getTotal() {
-  return cart.reduce((total, item) => total + item.price * item.qty, 0);
+  return cart.reduce((t, i) => t + i.price * i.qty, 0);
 }
 
-/* ==== CART UI ==== */
+/* ================= CART UI ================= */
 function updateCartUI() {
   const items = document.getElementById("cartItems");
   const total = document.getElementById("cartTotal");
@@ -66,9 +83,14 @@ function updateCartUI() {
 
   cart.forEach(item => {
     items.innerHTML += `
-      <div>
-        ${item.name} x${item.qty}
-        <button onclick="removeFromCart(${item.id})">❌</button>
+      <div class="cart-item">
+        <span>${item.name}</span>
+        <div class="qty">
+          <button onclick="decreaseQty(${item.id})">−</button>
+          <span>${item.qty}</span>
+          <button onclick="increaseQty(${item.id})">+</button>
+        </div>
+        <span>Rp ${item.price * item.qty}</span>
       </div>
     `;
   });
@@ -76,17 +98,17 @@ function updateCartUI() {
   total.innerText = "Total: Rp " + getTotal();
 }
 
-/* ==== CART BADGE ==== */
+/* ================= CART BADGE ================= */
 function updateCartCount() {
   const badge = document.getElementById("cartCount");
   if (!badge) return;
 
-  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+  const count = cart.reduce((s, i) => s + i.qty, 0);
   badge.innerText = count;
   badge.style.display = count ? "inline-block" : "none";
 }
 
-/* ==== CHECKOUT ==== */
+/* ================= CHECKOUT ================= */
 function checkout() {
   checkLogin();
 
@@ -103,14 +125,17 @@ function checkout() {
   updateCartCount();
 }
 
-/* ==== AUTO LOAD ==== */
+/* ================= LAST PAGE ================= */
+function saveLastPage() {
+  localStorage.setItem("lastPage", location.pathname);
+}
+
+/* ================= AUTO LOAD ================= */
 document.addEventListener("DOMContentLoaded", () => {
+  loadCart();          // 🔥 kunci anti refresh
   saveLastPage();
   checkLogin();
   loadUser();
   updateCartUI();
   updateCartCount();
 });
-function saveLastPage() {
-  localStorage.setItem("lastPage", location.pathname);
-}
