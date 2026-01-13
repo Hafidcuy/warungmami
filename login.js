@@ -13,4 +13,8 @@ function login() {
     } else {
       errorMsg.style.display = "block";
     }
+
   }
+window.addEventListener("pageshow", () => {
+  updateCartCount();
+});
