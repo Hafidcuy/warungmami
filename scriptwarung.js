@@ -169,3 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
   updateCartUI();
   updateCartCount();
 });
+window.addEventListener("pageshow", () => {
+  updateCartCount();
+});
+
