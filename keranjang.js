@@ -1,5 +1,5 @@
 /* ===============================
-   CART STATE (SINGLE SOURCE)
+   CART STORAGE (SUMBER KEBENARAN)
 ================================ */
 function getCart() {
   return JSON.parse(localStorage.getItem("cart")) || [];
@@ -10,21 +10,21 @@ function setCart(cart) {
 }
 
 /* ===============================
-   CART COUNT (BADGE)
+   CART COUNT (NAVBAR)
 ================================ */
 function updateCartCount() {
   const badge = document.getElementById("cartCount");
   if (!badge) return;
 
   const cart = getCart();
-  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+  const count = cart.reduce((t, i) => t + i.qty, 0);
 
   badge.innerText = count;
   badge.style.display = count > 0 ? "inline-block" : "none";
 }
 
 /* ===============================
-   CART UI
+   CART UI (HALAMAN KERANJANG)
 ================================ */
 function updateCartUI() {
   const items = document.getElementById("cartItems");
@@ -59,7 +59,7 @@ function updateCartUI() {
 }
 
 /* ===============================
-   ADD / CHANGE QTY
+   ADD / UPDATE ITEM
 ================================ */
 function addToCart(product) {
   if (!product || product.type !== "warung") return;
@@ -71,16 +71,17 @@ function addToCart(product) {
   else cart.push({ ...product, qty: 1 });
 
   setCart(cart);
-  updateCartUI();
   updateCartCount();
 }
 
 function changeQty(id, delta) {
   let cart = getCart();
 
-  cart = cart.map(i =>
-    i.id === id ? { ...i, qty: i.qty + delta } : i
-  ).filter(i => i.qty > 0);
+  cart = cart
+    .map(i =>
+      i.id === id ? { ...i, qty: i.qty + delta } : i
+    )
+    .filter(i => i.qty > 0);
 
   setCart(cart);
   updateCartUI();
@@ -88,7 +89,7 @@ function changeQty(id, delta) {
 }
 
 /* ===============================
-   CHECKOUT (FIX UTAMA)
+   CHECKOUT (INI KUNCI UTAMA)
 ================================ */
 function checkout() {
   const cart = getCart();
@@ -99,16 +100,16 @@ function checkout() {
 
   alert("Checkout berhasil!");
 
-  // 🔥 HAPUS TOTAL
+  // 🔥 HAPUS DATA ASLI
   localStorage.removeItem("cart");
 
-  // 🔥 PAKSA UPDATE SEKARANG
+  // 🔥 PAKSA UI & BADGE SINKRON
   updateCartUI();
   updateCartCount();
 }
 
 /* ===============================
-   SYNC HALAMAN (INI KUNCINYA)
+   AUTO SYNC SEMUA HALAMAN
 ================================ */
 window.addEventListener("pageshow", () => {
   updateCartCount();
