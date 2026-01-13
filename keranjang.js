@@ -1,17 +1,17 @@
 /* =====================
-   CART STORAGE
+   CART DATA
 ===================== */
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 /* =====================
-   SAVE CART
+   SAVE
 ===================== */
 function saveCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
 }
 
 /* =====================
-   CART COUNT (NAVBAR)
+   CART COUNT
 ===================== */
 function updateCartCount() {
   const badge = document.getElementById("cartCount");
@@ -55,7 +55,7 @@ function updateCartUI() {
 }
 
 /* =====================
-   ADD / CHANGE QTY
+   ADD & QTY
 ===================== */
 function addToCart(product) {
   const item = cart.find(i => i.id === product.id);
@@ -76,39 +76,35 @@ function changeQty(id, delta) {
 }
 
 /* =====================
-   CHECKOUT (FINAL)
+   CHECKOUT (FINAL FIX)
 ===================== */
 function checkout() {
-  if (!cart.length) {
-    alert("Cart kosong");
-    return;
-  }
+  if (!cart.length) return alert("Cart kosong");
 
   alert("Checkout berhasil!");
 
-  // 🔥 HAPUS CART
   cart = [];
   localStorage.removeItem("cart");
 
-  // 🔥 TANDAI CART BARU SAJA DIBERSIHKAN
-  localStorage.setItem("cartCleared", "true");
+  // 🔥 FLAG PAKSA REFRESH HALAMAN LAIN
+  localStorage.setItem("forceReload", "true");
 
   updateCartUI();
   updateCartCount();
 }
 
 /* =====================
-   FORCE REFRESH SAAT KELUAR KERANJANG
+   AUTO REFRESH SAAT KELUAR KERANJANG
 ===================== */
 window.addEventListener("pageshow", () => {
-  if (localStorage.getItem("cartCleared") === "true") {
-    localStorage.removeItem("cartCleared");
-    location.reload(); // 💥 INI KUNCINYA
+  if (localStorage.getItem("forceReload") === "true") {
+    localStorage.removeItem("forceReload");
+    location.reload();
   }
 });
 
 /* =====================
-   AUTO LOAD
+   LOAD
 ===================== */
 document.addEventListener("DOMContentLoaded", () => {
   updateCartUI();
