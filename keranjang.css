@@ -4,12 +4,6 @@ body {
   padding: 30px;
 }
 
-.pokok {
-  align-items: center;
-  gap: 90px;
-  display: flex;
-}
-
 /* BOX KERANJANG */
 .hiasan {
   max-width: 420px;
@@ -63,3 +57,4 @@ body {
 .checkout-btn:hover {
   background: #e56b00;
 }
+
