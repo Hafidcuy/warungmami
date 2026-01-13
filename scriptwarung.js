@@ -99,3 +99,7 @@ document.querySelector(".search-toggle").addEventListener("click", () => {
     document.getElementById("searchInput").focus();
   }
 });
+document.addEventListener("DOMContentLoaded", () => {
+  updateCartCount();
+});
+
