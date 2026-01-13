@@ -1,175 +1,101 @@
-/* =========================
-   CART DATA (SINGLE SOURCE)
-========================= */
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-/* =========================
-   LOGIN
-========================= */
-function checkLogin() {
-  if (localStorage.getItem("isLogin") !== "true") {
-    alert("Silakan login terlebih dahulu");
-    location.href = "login.html";
-  }
-}
-
-/* =========================
-   USER NAVBAR
-========================= */
-function loadUser() {
-  const el = document.getElementById("navUsername");
-  if (el) el.innerText = localStorage.getItem("username") || "Guest";
-}
-
-function logout() {
-  localStorage.removeItem("isLogin");
-  localStorage.removeItem("username");
-  location.href = "login.html";
-}
-
-/* =========================
-   CART CORE
-========================= */
-function saveCart() {
-  localStorage.setItem("cart", JSON.stringify(cart));
-}
-
-function syncCart() {
-  cart = JSON.parse(localStorage.getItem("cart")) || [];
-}
-
-function addToCart(product) {
-  if (!product || product.type !== "warung") return;
-
-  const item = cart.find(i => i.id === product.id);
-  if (item) {
-    item.qty++;
-  } else {
-    cart.push({ ...product, qty: 1 });
-  }
-
-  saveCart();
-  updateCartUI();
-  updateCartCount();
-}
-
-function increaseQty(id) {
-  const item = cart.find(i => i.id === id);
-  if (!item) return;
-
-  item.qty++;
-  saveCart();
-  updateCartUI();
-  updateCartCount();
-}
-
-function decreaseQty(id) {
-  const item = cart.find(i => i.id === id);
-  if (!item) return;
-
-  item.qty--;
-  if (item.qty <= 0) {
-    cart = cart.filter(i => i.id !== id);
-  }
-
-  saveCart();
-  updateCartUI();
-  updateCartCount();
-}
-
-function removeFromCart(id) {
-  cart = cart.filter(i => i.id !== id);
-  saveCart();
-  updateCartUI();
-  updateCartCount();
-}
-
-function getTotal() {
-  return cart.reduce((total, item) => total + item.price * item.qty, 0);
-}
-
-/* =========================
-   CART UI
-========================= */
-function updateCartUI() {
-  const items = document.getElementById("cartItems");
-  const total = document.getElementById("cartTotal");
-
-  if (!items || !total) return;
-
-  items.innerHTML = "";
-
-  if (!cart.length) {
-    items.innerHTML = "<p>Keranjang kosong</p>";
-    total.innerText = "Total: Rp 0";
-    return;
-  }
-
-  cart.forEach(item => {
-    items.innerHTML += `
-      <div class="cart-item">
-        <span>${item.name}</span>
-        <div class="qty-control">
-          <button onclick="decreaseQty(${item.id})">−</button>
-          <span>${item.qty}</span>
-          <button onclick="increaseQty(${item.id})">+</button>
-        </div>
-        <span>Rp ${item.price * item.qty}</span>
-      </div>
-    `;
-  });
-
-  total.innerText = "Total: Rp " + getTotal();
-}
-
-/* =========================
-   CART BADGE (ANTI BUG)
-========================= */
-function updateCartCount() {
-  const badge = document.getElementById("cartCount");
-  if (!badge) return;
-
-  // ⬅️ BACA LANGSUNG DARI localStorage
-  const cartData = JSON.parse(localStorage.getItem("cart")) || [];
-  const count = cartData.reduce((sum, item) => sum + item.qty, 0);
-
-  badge.innerText = count;
-  badge.style.display = count > 0 ? "inline-block" : "none";
-}
-
-/* =========================
-   CHECKOUT (FINAL FIX)
-========================= */
-function checkout() {
-  checkLogin();
-
-  const cartData = JSON.parse(localStorage.getItem("cart")) || [];
-  if (!cartData.length) {
-    alert("Keranjang kosong");
-    return;
-  }
-
-  alert("Checkout berhasil!\nTotal: Rp " + getTotal());
-
-  // 🔥 BERSIHKAN CART TOTAL
-  localStorage.removeItem("cart");
-  cart = [];
-
-  // 🔥 SINKRON SEMUA HALAMAN
-  updateCartUI();
-  updateCartCount();
-}
-
-/* =========================
-   AUTO LOAD (WAJIB)
-========================= */
 document.addEventListener("DOMContentLoaded", () => {
-  syncCart();
-  loadUser();
-  updateCartUI();
-  updateCartCount();
+  const input = document.getElementById("searchInput") || document.querySelector(".navbar input[type='text']");
+  const sections = Array.from(document.querySelectorAll("section"));
+
+  // cari heading (judul) yang berhubungan dengan sebuah section
+  function findHeadingForSection(section) {
+    // 1) cari prev sibling dari section
+    let node = section.previousElementSibling;
+    while (node) {
+      if (node.classList && node.classList.contains('judul')) return node;
+      if (/^H[1-6]$/.test(node.tagName)) return node;
+      node = node.previousElementSibling;
+    }
+
+    // 2) jika tidak ditemukan, naik ke parent dan cari prev siblings (contoh: h2 sebelum <main>)
+    let parent = section.parentElement;
+    while (parent && parent !== document.body) {
+      node = parent.previousElementSibling;
+      while (node) {
+        if (node.classList && node.classList.contains('judul')) return node;
+        if (/^H[1-6]$/.test(node.tagName)) return node;
+        node = node.previousElementSibling;
+      }
+      parent = parent.parentElement;
+    }
+
+    return null;
+  }
+
+  // map: section -> its heading element (or null)
+  const sectionHeadingMap = new Map();
+  sections.forEach(s => sectionHeadingMap.set(s, findHeadingForSection(s)));
+
+  function search() {
+    const q = (input && input.value) ? input.value.toLowerCase().trim() : "";
+
+    // jika input kosong: reset semua (tampilkan semua card, section, judul)
+    if (q === "") {
+      sections.forEach(section => {
+        const cards = Array.from(section.querySelectorAll(".card"));
+        cards.forEach(c => c.style.display = ""); // kosongkan inline style agar gunakan CSS
+        section.style.display = ""; // tampilkan section
+        const h = sectionHeadingMap.get(section);
+        if (h) h.style.display = "";
+      });
+      return;
+    }
+
+    // untuk setiap section: periksa card di dalamnya
+    sections.forEach(section => {
+      const cards = Array.from(section.querySelectorAll(".card"));
+      let anyVisible = false;
+
+      cards.forEach(card => {
+        const dataNama = (card.getAttribute("data-nama") || "").toLowerCase();
+        const title = (card.querySelector("h3")?.textContent || "").toLowerCase();
+        const desc = (card.querySelector("p")?.textContent || "").toLowerCase();
+
+        // gunakan data-nama bila ada; fallback ke title/desc
+        const hay = dataNama || title + " " + desc;
+
+        if (hay.includes(q)) {
+          card.style.display = ""; // tampilkan (biar sesuai CSS)
+          anyVisible = true;
+        } else {
+          card.style.display = "none";
+        }
+      });
+
+      // kalau ada card yg tampil -> tunjukkan section & judul; jika tidak -> sembunyikan section + judul
+      section.style.display = anyVisible ? "" : "none";
+      const heading = sectionHeadingMap.get(section);
+      if (heading) heading.style.display = anyVisible ? "" : "none";
+    });
+  }
+
+  // event listener realtime + expose fungsi global untuk onkeyup compatibility
+  if (input) {
+    input.addEventListener("input", search);
+    window.searchItems = search;
+  } else {
+    console.warn("Search input tidak ditemukan: pastikan ada element dengan id='searchInput' atau .navbar input[type='text'].");
+  }
 });
-window.addEventListener("pageshow", () => {
-  updateCartCount();
+// toggle menu
+document.querySelector(".menu-toggle").addEventListener("click", () => {
+  const nav = document.querySelector(".navbar");
+  nav.classList.toggle("active");
+  nav.classList.remove("search-active");
 });
 
+// toggle search
+document.querySelector(".search-toggle").addEventListener("click", () => {
+  const nav = document.querySelector(".navbar");
+  nav.classList.toggle("search-active");
+  nav.classList.remove("active");
+
+  if (nav.classList.contains("search-active")) {
+    document.getElementById("searchInput").focus();
+  }
+});
