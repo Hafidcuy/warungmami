@@ -257,3 +257,16 @@ footer {
     padding: 6px;
   }
 }
+/* MODE HP */
+@media (max-width: 768px) {
+  .produk {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .card {
+    width: 100%;
+  }
+}
+
