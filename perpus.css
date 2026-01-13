@@ -1,0 +1,281 @@
+* {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+header {
+  background-color: rgb(234, 152, 0);
+  padding: 20px;
+  border-radius: 0 0 20px 20px;
+  margin-bottom: 20px;
+}
+
+/* === Logo === */
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+}
+
+/* === Navbar === */
+.navbar {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: black;
+  font-weight: bold;
+  transition: 0.3s;
+  padding: 6px 10px;
+}
+
+.navbar a:hover {
+  background-color: #444;
+  color: white;
+  border-radius: 10px;
+}
+
+.navbar input[type="text"] {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.hp {
+  display: none;
+  margin-left: auto;
+  gap: 10px;
+}
+
+/* === Cart (keranjang) === */
+#cart {
+  position: relative;
+  font-size: 26px;
+  color: black;
+  cursor: pointer;
+  padding: 5px;
+  margin-left: auto;
+  transition: 0.3s;
+}
+
+#cart:hover {
+  color: white;
+  background: #444;
+  border-radius: 8px;
+}
+
+#cart #cartCount {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: red;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+/* LIST MANGA */
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 20px;
+  margin: 30px;
+}
+
+/* Hover overlay */
+.rpl {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  max-width: 200px;
+}
+
+.rpl img {
+  width: 175px;
+  height: 270px;
+  border-radius: 5px;
+  display: block;
+}
+
+.manut {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  transition: opacity 0.5s;
+}
+
+.rpl:hover .manut {
+  opacity: 1;
+}
+
+.manut a {
+  border-radius: 5px;
+  text-decoration: none;
+  color: black;
+  background-color: aliceblue;
+  padding: 5px;
+  transition: 0.5s;
+}
+
+.manut a:hover {
+  background-color: black;
+  color: white;
+}
+
+.manut p {
+  color: white;
+  padding: 7px 10px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+/* FOOTER */
+footer {
+  background-color: rgb(234, 152, 0);
+  padding: 20px;
+  border-radius: 5px;
+  margin-top: 30px;
+  color: white;
+}
+
+/* ===== MODE HP: 2 KOLOM ===== */
+@media (max-width: 768px) {
+
+  /* container list jadi grid */
+  .list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 10px;
+  }
+
+  /* item comic */
+  .rpl {
+    width: 100%;
+    margin: 0 !important;
+  }
+
+  .hp {
+    display: flex;
+    margin-left: auto;
+    gap: 10px;
+  }
+
+  /* gambar cover */
+  .rpl img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+
+  /* teks judul */
+  .manut p {
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* link baca */
+  .manut a {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+  }
+}
+/* ===== NAVBAR HP: TITIK TIGA ===== */
+@media (max-width: 768px) {
+
+  .navbar a,
+  .navbar button,
+  .navbar span:not(.menu-toggle),
+  #searchInput {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: block;
+    font-size: 24px;
+    cursor: pointer;
+    margin-left: auto;
+    padding: 6px 10px;
+  }
+
+  .navbar.active a,
+  .navbar.active button,
+  .navbar.active span,
+  .navbar.active #searchInput {
+    display: block;
+    margin: 8px 0;
+  }
+
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ===== NAVBAR HP FIX ===== */
+@media (max-width: 768px) {
+
+  /* SEMBUNYIKAN SEMUA ISI NAVBAR KECUALI IKON */
+  .navbar a,
+  .navbar button,
+  .navbar span:not(.menu-toggle):not(.search-toggle),
+  .navbar input {
+    display: none !important;
+  }
+
+  /* ikon menu & search */
+  .menu-toggle,
+  .search-toggle {
+    display: inline-block !important;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 6px 10px;
+  }
+  
+  /* navbar jadi kolom saat aktif */
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* MENU AKTIF (⋮) */
+  .navbar.active a,
+  .navbar.active button,
+  .navbar.active span:not(.menu-toggle):not(.search-toggle) {
+    display: block !important;
+    margin: 8px 0;
+  }
+
+  /* SEARCH AKTIF (🔍) */
+  .navbar.search-active input {
+    display: block !important;
+    width: 100%;
+    margin-top: 8px;
+    padding: 6px;
+  }
+}

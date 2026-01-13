@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, initial-scale=1, maximum-scale=2, user-scalable=no" />
+  <title>PERPUSTAKAAN</title>
+  <link rel="stylesheet" href="perpus.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">
+          <img src="asset/logo_foxnime.png" alt="logo" />
+          <h1>KEDAI TERA ES</h1>
+          <p id="cart">
+          <a href="keranjang.html"><i class="bi bi-cart3" style="color: black;"></i></a>
+          <span id="cartCount">0</span>
+    </div>
+    </div>
+    <nav class="navbar">
+      <a href="index.html">Home</a>
+      <a href="perpus.html"><abbr style="text-decoration: none; border-radius: 5px;" title="Sambil Menunggu Pesanan Sampai Silahkan Menikmati list Comic Yang Kami Sediakan Di Sini">Perpustakaan</abbr></a>
+      <a href="login.html">Account</a>
+      <span>👤 <b id="navUsername"></b></span>
+      <button onclick="logout()">Logout</button>
+      </span><input type="text" id="searchInput" placeholder="Cari..." />
+    </nav>
+    <div class="hp">
+      <span class="search-toggle bi bi-search"></span>
+      <span class="menu-toggle">⋮</span>
+    </div>
+    
+  </header>
+
+  <div class="list">
+    <div class="rpl">
+      <div class="hilang">
+        <img
+          src="https://thumbnail.komiku.org/uploads/manga/otonari-no-tenshi-sama-ni-itsunomanika-dame-ningen-ni-sareteita-ken/manga_thumbnail-Manga-Otonari-no-Tenshi-sama-ni-Itsunomanika-Dame-Ningen-ni-Sareteita-Ken.jpg?w=300" />
+      </div>
+      <div class="manut" data-comic="otonari no tenshi sama">
+        <p>otonari no tenshi sama</p>
+        <a href="https://komiku.id/manga/otonari-no-tenshi-sama-ni-itsunomanika-dame-ningen-ni-sareteita-ken/">baca
+          sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img
+          src="https://thumbnail.komiku.org/uploads/manga/shiotaiou-no-sato-san-ga-ore-ni-dake-amai/manga_thumbnail-Manga-Shiotaiou-no-Sato-san-ga-Ore-ni-dake-Amai.jpg?w=300" />
+      </div>
+      <div class="manut" data-comic="shiotaiou no sato san ga ore ni dake amai">
+        <p>shiotaiou no sato san ga ore ni dake amai</p>
+        <a href="https://komiku.id/manga/shiotaiou-no-sato-san-ga-ore-ni-dake-amai/">baca sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img
+          src="https://thumbnail.komiku.org/uploads/manga/mission-yozakura-family/manga_thumbnail-Komik-Mission-Yozakura-Family.jpg?w=300" />
+      </div>
+      <div class="manut" data-comic="mission yozakura family">
+        <p>mission yozakura family</p>
+        <a href="https://komiku.id/manga/mission-yozakura-family/">baca sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img src="https://kiryuu02.com/wp-content/uploads/2021/04/boku-no-kokoro-no-yabai-yatsu-845574-chaFeW2c.jpg" />
+      </div>
+      <div class="manut" data-comic="boku no kokoro no yabai yatsu">
+        <p>boku no kokoro no yabai yatsu</p>
+        <a href="https://komiku.id/manga/boku-no-kokoro-no-yabai-yatsu/">baca sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img src="https://th.bing.com/th/id/OIP.PIqVpC4w_rzn3Pw3eHgs5AHaLE?rs=1&pid=ImgDetMain&cb=idpwebp2&o=7&rm=3" />
+      </div>
+      <div class="manut" data-comic="tokidoki bosotto roshiago de dereru tonari no alya san">
+        <p>tokidoki bosotto roshiago de dereru tonari no alya san</p>
+        <a href="https://komiku.id/manga/tokidoki-bosotto-roshiago-de-dereru-tonari-no-alya-san/">baca sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img src="https://comicvine.gamespot.com/a/uploads/scale_medium/6/67663/5435516-01.jpg" />
+      </div>
+      <div class="manut" data-comic="komi san wa komyushou desu">
+        <p>komi san wa komyushou desu</p>
+        <a href="https://komiku.id/manga/komi-san-wa-komyushou-desu/">baca sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img src="https://kiryuu02.com/wp-content/uploads/2021/03/kanojo-okarishimasu-090092-PcWlznSl.jpg" />
+      </div>
+      <div class="manut" data-comic="kanojo okarishimasu">
+        <p>kanojo okarishimasu</p>
+        <a href="https://komiku.id/manga/kanojo-okarishimasu/">baca sekarang</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Programed By Hafid
+  </footer>
+
+  <script src="keranjang.js"></script>
+  <script src="perpus.js"></script>
+</body>
+
+</html>

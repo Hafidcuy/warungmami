@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, initial-scale=1, maximum-scale=2, user-scalable=no" />
+  <title>Warung Mami</title>
+  <link rel="stylesheet" href="warung.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+</head>
+
+<body>
+  <header>
+    <div class="logo">
+      <img src="asset/logo_foxnime.png" alt="logo" />
+      <h1>KEDAI TERA ES</h1>
+      <p id="cart">
+        <a href="keranjang.html"><i class="bi bi-cart3" style="color: black;"></i></a>
+        <span id="cartCount">0</span>
+      </p>
+    </div>
+
+    <nav class="navbar">
+      <a href="index.html">Home</a>
+      <a href="perpus.html"><abbr style="text-decoration: none; border-radius: 5px;" title="Sambil Menunggu Pesanan Sampai Silahkan Menikmati list Comic Yang Kami Sediakan Di Sini">Perpustakaan</abbr></a>
+      <a href="login.html">Account</a>
+      <span>👤 <b id="navUsername"></b></span>
+      <button onclick="logout()">Logout</button>
+      </span><input type="text" id="searchInput" placeholder="Cari..." />
+    </nav>
+    <div class="hp">
+      <span class="search-toggle bi bi-search"></span>
+      <span class="menu-toggle">⋮</span>
+    </div>
+    
+  </header>
+
+
+  <div id="section">
+    <h2 class="judul" id="judul-minuman">Minuman</h2>
+  <main>
+    <section>
+      <div class="produk" id="produk-minuman">
+        
+        <div class="card" data-nama="es tera">
+          <img src="https://th.bing.com/th?id=OIP.dFGK8x-poKvN2tLKunP6owHaHa" alt="" />
+          <h3>Es Tera</h3>
+          <p>Harga: 3,000</p>
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+                  id: 1,
+                  name: 'Es Tera',
+                  price: 3000,
+                  type: 'warung'
+                })">
+                Beli
+              </button>
+            </a>
+            <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 1,
+                  name: 'Es Tera',
+                  price: 3000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="es lemon">
+          <img src="https://img-global.cpcdn.com/recipes/f8b502b88c818d4b/400x400cq90/photo.jpg" alt="" />
+          <h3>Es Lemon</h3>
+          <p>Harga: 3,000</p>
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 2,
+            name: 'Es Lemon',
+            price: 3000,
+            type: 'warung'
+          })">
+          Beli
+          </button>
+          </a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 2,
+                  name: 'Es Lemon',
+                  price: 3000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="milo">
+          <img
+            src="https://media-order.bkdelivery.co.id/thumb/product_photo/2024/2/13/zjmzkfvb8fwk2q35zzxmkl_product_details.jpg"
+            alt="" />
+          <h3>Milo</h3>
+          <p>Harga: 4,000</p>
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+              id: 3,
+              name: 'Milo',
+              price: 4000,
+              type: 'warung'
+            })">
+            Beli
+            </button>
+            </a>
+            <a href="#" class="bi bi-cart3" onclick="addToCart({
+                    id: 3,
+                    name: 'Milo',
+                    price: 4000,
+                    type: 'warung'
+                  }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+              </a>
+          </div>
+            
+        </div>
+        <div class="card" data-nama="kopi hitam">
+          <img
+            src="https://res.cloudinary.com/dk0z4ums3/image/upload/v1709285903/attached_image/8-manfaat-kopi-hitam-tanpa-gula-untuk-kesehatan.jpg"
+            alt="" />
+          <h3>Kopi Hitam</h3>
+          <p>Harga: 4,000</p>
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 4,
+            name: 'Kopi Hitam',
+            price: 4000,
+            type: 'warung'
+          })">
+          Beli
+          </button>
+          </a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 4,
+                  name: 'Kopi Hitam',
+                  price: 4000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="kopi susu">
+          <img src="https://awsimages.detik.net.id/community/media/visual/2024/05/06/kopi-susu-1.jpeg?w=1200" alt="" />
+          <h3>Kopi Susu</h3>
+          <p>Harga: 4,000</p>
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 5,
+            name: 'Kopi Susu',
+            price: 4000,
+            type: 'warung'
+          })">
+          Beli
+          </button>
+          </a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 5,
+                  name: 'Kopi Susu',
+                  price: 4000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="good day">
+          <img
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4gCrAIpkdGTU3yOSihVx0RC-iQ25imwjMB8c8TojDvhBFa0GT6P-4Gx6HnwWH4mfg2rs&usqp=CAU"
+            alt="" />
+          <h3>Good Day</h3>
+          <p>Harga: 5,000</p>
+          
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+              id: 5,
+              name: 'Good Day',
+              price: 5000,
+              type: 'warung'
+            })">
+            Beli
+            </button>
+          </a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 5,
+                  name: 'Good Day',
+                  price: 5000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="nutri sari">
+          <img
+            src="https://arti-assets.sgp1.cdn.digitaloceanspaces.com/renyswalayanku/products/abdd4743-19fb-4794-a927-b939380f3356.jpg"
+            alt="" />
+          <h3>Nutri Sari</h3>
+          <p>Harga: 3,000</p>
+
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 5,
+            name: 'Nutri Sari',
+            price: 3000,
+            type: 'warung'
+          })">
+          Beli
+          </button></a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 5,
+                  name: 'Nutri Sari',
+                  price: 3000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="champion">
+          <img
+            src="https://www.static-src.com/wcsstore/Indraprastha/images/catalog/full/catalog-image/110/MTA-168269950/no-brand_energen-champion-minuman-cokelat-malt-35-gr_full01.jpg"
+            alt="" />
+          <h3>Champion</h3>
+          <p>Harga: 3,000</p>
+          
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 5,
+            name: 'Champion',
+            price: 3000,
+            type: 'warung'
+          })">
+          Beli
+          </button></a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 5,
+                  name: 'Champion',
+                  price: 3000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="milk tea">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNo7Cxk1XfkKmKJ_k7tF4pmV3Cp6rYL7KBPw&s"
+            alt="" />
+          <h3>Milk Tea</h3>
+          <p>Harga: 3,000</p>
+          
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 5,
+            name: 'Milk Tea',
+            price: 3000,
+            type: 'warung'
+          })">
+          Beli
+          </button></a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 5,
+                  name: 'Milk Tea',
+                  price: 3000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="pop ice">
+          <img
+            src="https://images.tokopedia.net/img/cache/500-square/VqbcmM/2020/10/26/ba76449d-b660-4ac8-8b9e-0bf25071697d.jpg"
+            alt="" />
+          <h3>Pop Ice</h3>
+          <p>Harga: 3,000</p>
+          
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 5,
+            name: 'Pop Ice',
+            price: 3000,
+            type: 'warung'
+          })">
+          Beli
+          </button></a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 5,
+                  name: 'Pop Ice',
+                  price: 3000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="susu putih">
+          <img
+            src="https://img-cdn.medkomtek.com/exZOExnB99zTAjDOC3w9utmWI7Q=/510x395/smart/filters:quality(100):format(webp)/article/P0eP4QevsSMo8ZCKnwqEw/original/035855500_1531271727-Sampai-Usia-Berapa-Konsumsi-Susu-Diperlukan-By-Alter-ego-shutterstock_640048081.jpg"
+            alt="" />
+          <h3>Susu Putih</h3>
+          <p>Harga: 3,000</p>
+          
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 5,
+            name: 'Susu Putih',
+            price: 3000,
+            type: 'warung'
+          })">
+          Beli
+          </button></a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 5,
+                  name: 'Susu Putih',
+                  price: 3000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="susu coklat">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnF_zUvt2cvETrYV59uRSqqK5jwS_u2GPmww&s"
+            alt="" />
+          <h3>Susu Coklat</h3>
+          <p>Harga: 3,000</p>
+          
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 5,
+            name: 'Susu Coklat',
+            price: 3000,
+            type: 'warung'
+          })">
+          Beli
+          </button></a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 5,
+                  name: 'Susu Coklat',
+                  price: 3000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+    <h2 class="judul" id="judul-makanan">Makanan</h2>
+  <main class="main2">
+    <section>
+      <div class="produk" id="produk-makanan">
+        <div class="card" data-nama="mie gelas">
+          <img src="https://down-id.img.susercontent.com/file/ca685e9b0568f2eca2c9aa640b3af3b3" alt="" />
+          <h3>Mie Gelas</h3>
+          <p>Harga: 2,000</p>
+          
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 5,
+            name: 'Mie Gelas',
+            price: 2000,
+            type: 'warung'
+          })">
+          Beli
+          </button></a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 5,
+                  name: 'Mie Gelas',
+                  price: 2000,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="pentol">
+          <img
+            src="https://blue.kumparan.com/image/upload/fl_progressive,fl_lossy,c_fill,f_auto,q_auto:best,w_640/v1641978971/qcpmgp9rqlwprasouxmy.jpg"
+            alt="" />
+          <h3>Pentol</h3>
+          <p>Harga: 500</p>
+          
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 5,
+            name: 'Pentol',
+            price: 500,
+            type: 'warung'
+          })">
+          Beli
+          </button></a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 5,
+                  name: 'Pentol',
+                  price: 500,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+        <div class="card" data-nama="tahu">
+          <img
+            src="https://cdn0-production-images-kly.akamaized.net/H9U6zpGVVvO43M99vzKXOQqaDb4=/0x250:960x791/500x281/filters:quality(75):strip_icc():format(webp)/kly-media-production/medias/4369095/original/031100500_1679563393-photo__3_.jpg"
+            alt="" />
+          <h3>Tahu</h3>
+          <p>Harga: 500</p>
+          
+          <div>
+            <a href="keranjang.html"><button onclick="addToCart({
+            id: 5,
+            name: 'Tahu',
+            price: 500,
+            type: 'warung'
+          })">
+          Beli
+          </button></a>
+          <a href="#" class="bi bi-cart3" onclick="addToCart({
+                  id: 5,
+                  name: 'Tahu',
+                  price: 500,
+                  type: 'warung'
+                }); return false;" style="color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); padding: 4px; border-radius: 2px;">
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  </div>
+
+
+  <footer>©COPYRIGHT Warung Mami</footer>
+
+  <script src="keranjang.js"></script>
+  <script src="scriptwarung.js"></script>
+</body>
+
+
+</html>
+
+

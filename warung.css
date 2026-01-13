@@ -1,0 +1,259 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fff;
+  color: #333;
+  overflow-x: hidden;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+header {
+  background-color: rgb(234, 152, 0);
+  padding: 20px;
+  border-radius: 0 0 20px 20px;
+  margin-bottom: 20px;
+}
+
+/* === Logo === */
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+}
+
+/* === Navbar === */
+.navbar {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.hp {
+  display: none;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: black;
+  font-weight: bold;
+  transition: 0.3s;
+  padding: 6px 10px;
+}
+
+.navbar a:hover {
+  background-color: #444;
+  color: white;
+  border-radius: 10px;
+}
+
+.navbar input[type="text"] {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* === Cart (keranjang) === */
+#cart {
+  position: relative;
+  font-size: 26px;
+  color: rgb(255, 255, 255);
+  cursor: pointer;
+  padding: 5px;
+  margin-left: auto;
+  transition: 0.3s;
+}
+
+#cart:hover {
+  color: white;
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+#cart #cartCount{
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: red;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+/* === Main Content === */
+main {
+  margin: 35px;
+  justify-items: center;
+}
+
+.main2 {
+  
+  margin: 35px;
+  justify-items: center;
+}
+
+h2.judul {
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.produk {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.card {
+  background-color: orange;
+  padding: 15px;
+  border-radius: 20px;
+  text-align: center;
+  transition: 0.3s;
+  height: 100%;
+  width: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;    
+  border-radius: 15px;
+  display: block;
+}
+
+
+.card h3 {
+  margin-top: 10px;
+  font-size: 18px;
+}
+
+.card p {
+  margin: 8px 0;
+}
+
+.card a button{
+  background-color: black;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  display: inline-block;
+  transition: 0.3s;
+}
+
+.card a button:hover {
+  background-color: white;
+  color: black;
+}
+
+/* === Footer === */
+footer {
+  background-color: orange;
+  padding: 15px;
+  text-align: center;
+  margin-top: 40px;
+  border-radius: 10px 10px 0 0;
+}
+
+/* ===== NAVBAR HP: TITIK TIGA ===== */
+@media (max-width: 768px) {
+
+  .navbar a,
+  .navbar button,
+  .navbar span:not(.menu-toggle),
+  #searchInput {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: block;
+    font-size: 24px;
+    cursor: pointer;
+    margin-left: auto;
+    padding: 6px 10px;
+  }
+
+  .navbar.active a,
+  .navbar.active button,
+  .navbar.active span,
+  .navbar.active #searchInput {
+    display: block;
+    margin: 8px 0;
+  }
+
+  .hp {
+    display: flex;
+    margin-left: auto;
+    gap: 10px;
+  }
+
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ===== NAVBAR HP FIX ===== */
+@media (max-width: 768px) {
+
+  /* SEMBUNYIKAN SEMUA ISI NAVBAR KECUALI IKON */
+  .navbar a,
+  .navbar button,
+  .navbar span:not(.menu-toggle):not(.search-toggle),
+  .navbar input {
+    display: none !important;
+  }
+
+  /* ikon menu & search */
+  .menu-toggle,
+  .search-toggle {
+    display: inline-block !important;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 6px 10px;
+  }
+
+  /* navbar jadi kolom saat aktif */
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* MENU AKTIF (⋮) */
+  .navbar.active a,
+  .navbar.active button,
+  .navbar.active span:not(.menu-toggle):not(.search-toggle) {
+    display: block !important;
+    margin: 8px 0;
+  }
+
+  /* SEARCH AKTIF (🔍) */
+  .navbar.search-active input {
+    display: block !important;
+    width: 100%;
+    margin-top: 8px;
+    padding: 6px;
+  }
+}
