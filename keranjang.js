@@ -4,14 +4,35 @@
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 /* =====================
-   SAVE
+   LOGIN SYSTEM
+===================== */
+function checkLogin() {
+  if (localStorage.getItem("isLogin") !== "true") {
+    alert("Silakan login terlebih dahulu");
+    location.href = "login.html";
+  }
+}
+
+function loadUser() {
+  const el = document.getElementById("navUsername");
+  if (el) el.innerText = localStorage.getItem("username") || "Guest";
+}
+
+function logout() {
+  localStorage.removeItem("isLogin");
+  localStorage.removeItem("username");
+  location.href = "login.html";
+}
+
+/* =====================
+   SAVE CART
 ===================== */
 function saveCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
 }
 
 /* =====================
-   CART COUNT
+   CART COUNT (BADGE)
 ===================== */
 function updateCartCount() {
   const badge = document.getElementById("cartCount");
@@ -45,23 +66,26 @@ function updateCartUI() {
         <button onclick="changeQty(${item.id}, -1)">-</button>
         ${item.qty}
         <button onclick="changeQty(${item.id}, 1)">+</button>
+        <button onclick="removeFromCart(${item.id})">❌</button>
       </div>
     `;
   });
 
-  total.innerText =
-    "Total: Rp " +
-    cart.reduce((t, i) => t + i.price * i.qty, 0);
+  total.innerText = "Total: Rp " + getTotal();
 }
 
 /* =====================
-   ADD & QTY
+   CART CORE
 ===================== */
 function addToCart(product) {
+  // hanya produk warung
+  if (product?.type !== "warung") return;
+
   const item = cart.find(i => i.id === product.id);
   item ? item.qty++ : cart.push({ ...product, qty: 1 });
 
   saveCart();
+  updateCartUI();
   updateCartCount();
 }
 
@@ -75,18 +99,34 @@ function changeQty(id, delta) {
   updateCartCount();
 }
 
+function removeFromCart(id) {
+  cart = cart.filter(i => i.id !== id);
+  saveCart();
+  updateCartUI();
+  updateCartCount();
+}
+
+function getTotal() {
+  return cart.reduce((t, i) => t + i.price * i.qty, 0);
+}
+
 /* =====================
-   CHECKOUT (FINAL FIX)
+   CHECKOUT
 ===================== */
 function checkout() {
-  if (!cart.length) return alert("Cart kosong");
+  checkLogin();
 
-  alert("Checkout berhasil!");
+  if (!cart.length) {
+    alert("Cart kosong");
+    return;
+  }
+
+  alert("Checkout berhasil!\nTotal: Rp " + getTotal());
 
   cart = [];
   localStorage.removeItem("cart");
 
-  // 🔥 FLAG PAKSA REFRESH HALAMAN LAIN
+  // paksa refresh halaman lain
   localStorage.setItem("forceReload", "true");
 
   updateCartUI();
@@ -94,7 +134,7 @@ function checkout() {
 }
 
 /* =====================
-   AUTO REFRESH SAAT KELUAR KERANJANG
+   AUTO REFRESH SETELAH CHECKOUT
 ===================== */
 window.addEventListener("pageshow", () => {
   if (localStorage.getItem("forceReload") === "true") {
@@ -104,9 +144,18 @@ window.addEventListener("pageshow", () => {
 });
 
 /* =====================
-   LOAD
+   LAST PAGE
+===================== */
+function saveLastPage() {
+  localStorage.setItem("lastPage", location.pathname);
+}
+
+/* =====================
+   AUTO LOAD
 ===================== */
 document.addEventListener("DOMContentLoaded", () => {
+  saveLastPage();
+  loadUser();
   updateCartUI();
   updateCartCount();
 });
