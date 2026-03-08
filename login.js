@@ -33,6 +33,15 @@ function login() {
 }
 
 /* =====================
+   ENTER UNTUK LOGIN
+===================== */
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    login();
+  }
+});
+
+/* =====================
    CART BADGE (AMAN)
 ===================== */
 window.addEventListener("pageshow", () => {
