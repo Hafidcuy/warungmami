@@ -76,12 +76,23 @@
   </div>
 
   <div id="section">
-    <!-- Bar filter kategori berwarna (diisi JS) -->
-    <div class="cat-filter" id="catFilter"></div>
-    <!-- Section per kategori (diisi JS) -->
-    <div id="catSections">
-      <div class="loading-box">Memuat produk...</div>
-    </div>
+    <h2 class="judul" id="judul-minuman">Minuman</h2>
+    <main>
+      <section>
+        <div class="produk" id="produk-minuman">
+          <div class="loading-box">Memuat produk...</div>
+        </div>
+      </section>
+    </main>
+
+    <h2 class="judul" id="judul-makanan">Makanan</h2>
+    <main class="main2">
+      <section>
+        <div class="produk" id="produk-makanan">
+          <div class="loading-box">Memuat produk...</div>
+        </div>
+      </section>
+    </main>
   </div>
 
   <footer>
@@ -94,39 +105,12 @@
   <script src="/warung/scriptwarung.js"></script>
   <script>
     // ====== Render produk dari database ======
-    let CAT_LIST = []; // [{slug,nama,warna}]
-
-    function chipColorOf(cat) {
-      const c = CAT_LIST.find((x) => x.slug === cat);
-      return c ? c.warna : "var(--brand)";
-    }
-    function chipLabelOf(cat) {
-      const c = CAT_LIST.find((x) => x.slug === cat);
-      return c ? c.nama : cat;
-    }
-
     function cardHTML(p) {
       const harga = rupiah(p.price);
-      const warna = chipColorOf(p.category);
-      const label = chipLabelOf(p.category);
-      const stok = typeof p.stok === "number" ? p.stok : null;
-      const habis = !p.available || (stok !== null && stok <= 0);
-      const stokBadge =
-        stok === null
-          ? ""
-          : habis
-          ? `<span class="stok-badge habis">Habis</span>`
-          : `<span class="stok-badge ${stok <= 5 ? "menipis" : ""}">Stok ${stok}</span>`;
-
-      const chip = `<span class="cat-chip" style="background:${warna}">${escapeHtml(label)}</span>`;
-
-      if (habis) {
+      if (!p.available) {
         return `
         <div class="card sold-out" data-nama="${escapeHtml(p.name)}" data-kategori="${p.category}">
-          <div class="card-media">
-            <img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" loading="lazy" />
-            ${chip}${stokBadge}
-          </div>
+          <img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" loading="lazy" />
           <h3>${escapeHtml(p.name)}</h3>
           <p>Harga: ${harga}</p>
           <div><button disabled>Habis</button></div>
@@ -134,10 +118,7 @@
       }
       return `
         <div class="card" data-nama="${escapeHtml(p.name)}" data-kategori="${p.category}">
-          <div class="card-media">
-            <img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" loading="lazy" />
-            ${chip}${stokBadge}
-          </div>
+          <img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" loading="lazy" />
           <h3>${escapeHtml(p.name)}</h3>
           <p>Harga: ${harga}</p>
           <div>
@@ -151,56 +132,19 @@
         </div>`;
     }
 
-    // Pil filter kategori berwarna
-    function renderCatPills(products) {
-      const box = document.getElementById("catFilter");
-      const punya = new Set(products.map((p) => p.category));
-      const pills = CAT_LIST.filter((c) => punya.has(c.slug));
-      if (!pills.length) { box.innerHTML = ""; box.style.display = "none"; return; }
-      box.style.display = "flex";
-      box.innerHTML =
-        `<button class="cat-pill active" data-cat="semua">Semua</button>` +
-        pills.map((c) => `<button class="cat-pill" data-cat="${escapeHtml(c.slug)}" style="--pill:${c.warna}"><i></i>${escapeHtml(c.nama)}</button>`).join("");
-      box.querySelectorAll(".cat-pill").forEach((b) => {
-        b.addEventListener("click", () => {
-          box.querySelectorAll(".cat-pill").forEach((x) => x.classList.toggle("active", x === b));
-          paintSections(products, b.dataset.cat);
-        });
-      });
-    }
-
-    // Gambar section per kategori (heading berwarna) agar pencarian lama tetap jalan
-    function paintSections(products, filter) {
-      const wrap = document.getElementById("catSections");
-      const pills = CAT_LIST.filter((c) => products.some((p) => p.category === c.slug));
-      const target = filter === "semua" ? pills : pills.filter((c) => c.slug === filter);
-      let html = "";
-      target.forEach((c) => {
-        const items = products.filter((p) => p.category === c.slug);
-        if (!items.length) return;
-        html += `<h2 class="judul cat-judul" style="--jc:${c.warna}">${escapeHtml(c.nama)}</h2>
-        <main>
-          <section>
-            <div class="produk" id="produk-${escapeHtml(c.slug)}">${items.map(cardHTML).join("")}</div>
-          </section>
-        </main>`;
-      });
-      wrap.innerHTML = html || `<div class="loading-box">Belum ada produk di kategori ini</div>`;
-    }
-
     async function renderProducts() {
       try {
-        const [{ categories }, { products }] = await Promise.all([
-          API.get("/categories"),
-          API.get("/products"),
-        ]);
-        CAT_LIST = categories || [];
-        const tersedia = products.filter((p) => p.available !== false || true); // tetap tampilkan (sold-out)
-        renderCatPills(tersedia);
-        paintSections(tersedia, "semua");
+        const { products } = await API.get("/products");
+        const minuman = products.filter((p) => p.category === "minuman");
+        const makanan = products.filter((p) => p.category === "makanan");
+        document.getElementById("produk-minuman").innerHTML =
+          minuman.map(cardHTML).join("") || '<div class="loading-box">Belum ada produk minuman</div>';
+        document.getElementById("produk-makanan").innerHTML =
+          makanan.map(cardHTML).join("") || '<div class="loading-box">Belum ada produk makanan</div>';
       } catch (err) {
-        document.getElementById("catSections").innerHTML =
-          `<div class="loading-box">Gagal memuat produk: ${escapeHtml(err.message)}<br>Pastikan server berjalan.</div>`;
+        const msg = `<div class="loading-box">Gagal memuat produk: ${escapeHtml(err.message)}<br>Pastikan server berjalan.</div>`;
+        document.getElementById("produk-minuman").innerHTML = msg;
+        document.getElementById("produk-makanan").innerHTML = msg;
       }
     }
 
