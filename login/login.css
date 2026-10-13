@@ -1,0 +1,251 @@
+/* =========================================================
+   login.css — halaman masuk & daftar
+   ========================================================= */
+
+.auth-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 16px;
+  background: var(--bg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 430px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+  padding: 32px;
+}
+
+/* ===== Brand ===== */
+.auth-brand {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.auth-brand img {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--r);
+  margin: 0 auto 12px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+.auth-brand h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: .5px;
+}
+
+.auth-brand p {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+
+/* ===== Tab ===== */
+.tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--tint);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  padding: 5px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 9px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: .15s;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab.active {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+
+/* ===== Form ===== */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-form.hidden {
+  display: none;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.auth-form input {
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-size: 15px;
+  background: var(--bg);
+  outline: none;
+  transition: .15s;
+}
+
+.auth-form input:focus {
+  border-color: var(--brand);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(242, 107, 15, .16);
+}
+
+.form-error {
+  color: var(--st-cancelled);
+  font-size: 13px;
+  min-height: 16px;
+}
+
+/* ===== Password ===== */
+.pw-wrap {
+  position: relative;
+  display: block;
+}
+
+.pw-wrap input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.pw-toggle {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 6px;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+}
+
+.pw-toggle:hover {
+  background: var(--tint);
+  color: var(--brand-dk);
+}
+
+/* ===== Tombol ===== */
+.btn-primary {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  padding: 13px;
+  border-radius: var(--r-sm);
+  font-size: 15.5px;
+  font-weight: 600;
+  transition: background .2s;
+}
+
+.btn-primary:hover {
+  background: var(--brand-dk);
+}
+
+.btn-primary:disabled {
+  background: var(--line);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* ===== Akun demo ===== */
+.demo-box {
+  margin-top: 18px;
+  padding: 13px;
+  background: var(--tint);
+  border: 1px solid var(--tint-2);
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--st-pending);
+}
+
+.demo-box>b {
+  display: block;
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--brand-dk);
+  margin-bottom: 8px;
+}
+
+.demo-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  margin-top: 6px;
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 12.5px;
+  transition: border-color .15s, background .15s;
+}
+
+.demo-row:hover {
+  border-color: var(--brand);
+  background: var(--bg);
+}
+
+/* ===== Kembali ===== */
+.back-home {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 18px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.back-home:hover {
+  color: var(--brand-dk);
+}
+
+/* ===== HP ===== */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 24px 18px;
+  }
+
+  .auth-brand h1 {
+    font-size: 20px;
+  }
+}

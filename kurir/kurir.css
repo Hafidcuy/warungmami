@@ -1,0 +1,198 @@
+/* =========================================================
+   kurir.css — panel pengantar
+   ========================================================= */
+
+body { background: var(--bg); color: var(--ink); }
+
+/* ===== Topbar ===== */
+.topbar {
+  background: var(--brand);
+  color: #fff;
+  padding: 14px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(30, 25, 15, .12);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-left img { width: 44px; height: 44px; border-radius: var(--r); object-fit: cover; background: #fff; }
+.topbar-left h1 { font-size: 19px; font-weight: 600; }
+.topbar-left p { font-size: 12px; opacity: .9; }
+.topbar-right { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+
+.btn-ghost {
+  background: rgba(255, 255, 255, .22);
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: .2s;
+}
+.btn-ghost:hover { background: rgba(255, 255, 255, .34); }
+
+main { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+
+/* ===== Statistik ===== */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: var(--shadow);
+}
+.stat-icon { font-size: 20px; }
+.stat-card b { font-size: 24px; color: var(--brand-dk); }
+.stat-card small { color: var(--muted); font-size: 12px; }
+
+/* ===== Panel ===== */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 18px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow);
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.panel-head h2, .panel h2 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+
+.btn-refresh {
+  background: #fff; border: 1px solid var(--line); width: 34px; height: 34px;
+  border-radius: 50%; cursor: pointer; color: var(--muted);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.btn-refresh:hover { border-color: var(--brand); color: var(--brand-dk); }
+
+.empty { color: var(--muted); text-align: center; padding: 24px; font-size: 14px; }
+
+/* ===== Kartu tugas ===== */
+.task-list { display: flex; flex-direction: column; gap: 14px; }
+.task-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; border-left: 5px solid var(--brand); }
+.task-card.is-sending { border-left-color: var(--st-sending-fg); }
+.task-card.is-siap { border-left-color: var(--ungu); }
+.task-card.is-delivered { border-left-color: var(--daun); opacity: .75; }
+.task-card.is-cancelled { border-left-color: var(--cabai); opacity: .7; }
+
+.task-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
+.task-code { font-weight: 700; color: var(--brand-dk); font-size: 16px; }
+.task-date { font-size: 12px; color: var(--muted); }
+
+.badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge-pending   { background: var(--st-pending-bg);   color: var(--st-pending-fg); }
+.badge-accepted  { background: var(--st-accepted-bg);  color: var(--st-accepted-fg); }
+.badge-siap      { background: var(--st-ready-bg);     color: var(--st-ready-fg); }
+.badge-sending   { background: var(--st-sending-bg);   color: var(--st-sending-fg); }
+.badge-delivered { background: var(--st-delivered-bg); color: var(--st-delivered-fg); }
+.badge-cancelled { background: var(--st-cancelled-bg); color: var(--st-cancelled-fg); }
+
+.task-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 14px; margin-top: 12px; }
+.task-items { font-size: 14px; color: var(--muted); }
+.task-items div { display: flex; justify-content: space-between; padding: 3px 0; }
+.task-total { display: flex; justify-content: space-between; border-top: 1px dashed var(--line); padding-top: 6px; margin-top: 6px; font-weight: 700; color: var(--ink); }
+
+.customer-box { background: var(--tint); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; font-size: 13.5px; line-height: 1.8; }
+.customer-box b { font-size: 14px; }
+.customer-box a.callbtn {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; background: var(--daun); color: #fff;
+  padding: 6px 12px; border-radius: var(--r-sm); text-decoration: none; font-size: 13px; font-weight: 600;
+}
+
+.task-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+.btn {
+  border: none; padding: 10px 18px; border-radius: var(--r-sm); cursor: pointer;
+  font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-pick { background: var(--brand); color: #fff; }
+.btn-pick:hover { background: var(--brand-dk); }
+.btn-done { background: var(--daun); color: #fff; }
+.btn-done:hover { filter: brightness(.92); }
+.btn-claim { background: var(--ungu); color: #fff; box-shadow: 3px 3px 0 rgba(42, 26, 14, .18); }
+.btn-claim:hover { filter: brightness(.93); transform: translate(-1px, -1px); }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+.task-note { font-size: 13px; color: var(--muted); margin-top: 10px; }
+.done-note { display: inline-flex; align-items: center; gap: 6px; color: var(--st-ok); font-weight: 600; font-size: 13.5px; }
+.inline-note { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ===== Bantuan ===== */
+.help ol { margin: 8px 0 0 20px; font-size: 14.5px; line-height: 2; color: var(--muted); }
+.help b { color: var(--brand-dk); }
+
+@media (max-width: 700px) {
+  .task-grid { grid-template-columns: 1fr; }
+  .topbar { padding: 12px 14px; }
+  .topbar-left h1 { font-size: 17px; }
+  .topbar-right { flex-wrap: wrap; justify-content: flex-end; }
+  main { padding: 16px 12px 50px; }
+  .panel { padding: 14px; }
+  .stats { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+  .task-card { padding: 13px; }
+  .btn { padding: 9px 14px; font-size: 13.5px; }
+}
+
+/* ===== Chat modal global ===== */
+.chat-modal-head {
+  padding: 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--brand);
+  color: #fff;
+}
+
+.chat-modal-form {
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  background: #fff;
+  display: flex;
+  gap: 8px;
+}
+
+.chat-modal-form input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  outline: none;
+  font-size: 14px;
+}
+
+.chat-modal-form button {
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

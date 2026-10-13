@@ -1,0 +1,337 @@
+/* =========================================================
+   perpus.css — halaman perpustakaan (baca komik)
+   ========================================================= */
+
+/* ===== Header ===== */
+header {
+  background: var(--brand);
+  color: #fff;
+  padding: 18px 20px;
+  border-radius: 0 0 14px 14px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(30, 25, 15, .12);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+/* ===== Logo ===== */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo img {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+}
+
+.logo h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+
+/* ===== Navbar ===== */
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.navbar a,
+.navbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background .2s;
+}
+
+.navbar a:hover,
+.navbar button:hover {
+  background: rgba(255, 255, 255, .16);
+}
+
+.navbar .nav-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.navbar input[type="text"] {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .55);
+  background: #fff;
+  color: var(--ink);
+  font-size: 14px;
+  min-width: 160px;
+}
+
+.navbar input[type="text"]::placeholder {
+  color: var(--muted);
+}
+
+/* ===== Ikon keranjang ===== */
+#cart {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--r-sm);
+  transition: background .2s;
+}
+
+#cart:hover {
+  background: rgba(255, 255, 255, .18);
+}
+
+#cart #cartCount {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #fff;
+  color: var(--brand-dk);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  padding: 4px 6px;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hp {
+  display: none;
+  gap: 10px;
+  color: #fff;
+}
+
+/* ===== Judul halaman ===== */
+h2.judul {
+  text-align: center;
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+
+h2.judul::after {
+  content: "";
+  display: block;
+  width: 36px;
+  height: 3px;
+  background: var(--brand);
+  border-radius: 2px;
+  margin: 8px auto 0;
+}
+
+/* ===== Daftar manga ===== */
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 175px);
+  justify-content: center;
+  gap: 20px;
+  max-width: 1160px;
+  margin: 34px auto 50px;
+  padding: 0 16px;
+}
+
+.rpl {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r);
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  transition: box-shadow .2s, transform .2s;
+}
+
+.rpl:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.rpl img {
+  width: 100%;
+  height: 270px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Overlay hover */
+.manut {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(30, 25, 15, .55);
+  transition: opacity .25s;
+}
+
+.rpl:hover .manut,
+.rpl:focus-within .manut {
+  opacity: 1;
+}
+
+.manut p {
+  color: #fff;
+  padding: 7px 10px;
+  border-radius: var(--r-sm);
+  margin-bottom: 10px;
+  font-size: 13.5px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.manut a {
+  border-radius: var(--r-sm);
+  background: #fff;
+  color: var(--brand-dk);
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background .2s, color .2s;
+}
+
+.manut a:hover {
+  background: var(--brand);
+  color: #fff;
+}
+
+/* ===== Footer ===== */
+footer {
+  background: var(--brand);
+  color: #fff;
+  padding: 16px;
+  margin-top: 30px;
+  border-radius: 14px 14px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+/* ===== MODE HP ===== */
+@media (max-width: 768px) {
+  .logo h1 {
+    font-size: 20px;
+  }
+
+  h2.judul {
+    font-size: 19px;
+  }
+
+  .list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 24px auto 36px;
+  }
+
+  .rpl {
+    width: 100%;
+    margin: 0 !important;
+  }
+
+  .rpl img {
+    width: 100%;
+    height: 220px;
+  }
+
+  .manut p {
+    font-size: 13px;
+    text-align: center;
+    padding: 6px 8px;
+  }
+
+  .manut a {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+  }
+
+  /* Sembunyikan isi navbar, tampilkan ikon */
+  .navbar a,
+  .navbar button,
+  .navbar span:not(.menu-toggle):not(.search-toggle),
+  .navbar input {
+    display: none !important;
+  }
+
+  .menu-toggle,
+  .search-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+    color: #fff;
+  }
+
+  .menu-toggle:hover,
+  .search-toggle:hover {
+    background: rgba(255, 255, 255, .16);
+  }
+
+  .hp {
+    display: flex;
+    gap: 10px;
+  }
+
+  .navbar {
+    order: 3;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    flex: none;
+  }
+
+  /* MENU AKTIF */
+  .navbar.active a,
+  .navbar.active button,
+  .navbar.active span:not(.menu-toggle):not(.search-toggle) {
+    display: flex !important;
+    margin: 6px 0;
+    width: 100%;
+  }
+
+  /* SEARCH AKTIF */
+  .navbar.search-active input {
+    display: block !important;
+    width: 100%;
+    margin-top: 8px;
+  }
+}

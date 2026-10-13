@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 | Warung Mami</title>
+<link rel="icon" href="/asset/logo_foxnime.png">
+<link rel="stylesheet" href="/css/base.css">
+<style>
+  body { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .box { padding: 30px; }
+  .icon {
+    width: 84px; height: 84px; margin: 0 auto 16px;
+    border-radius: 50%; background: var(--tint); color: var(--brand-dk);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon .ico { width: 38px; height: 38px; }
+  .code { font-size: 72px; font-weight: 700; color: var(--brand-dk); line-height: 1; letter-spacing: -1px; }
+  h1 { margin: 10px 0 8px; font-size: 22px; color: var(--ink); }
+  p { color: var(--muted); margin-bottom: 22px; }
+  a {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--brand); color: #fff;
+    padding: 12px 22px; border-radius: var(--r-sm); font-weight: 600;
+    box-shadow: var(--shadow);
+  }
+  a:hover { background: var(--brand-dk); }
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="icon"><i data-ico="pin"></i></div>
+    <div class="code">404</div>
+    <h1>Halaman tidak ditemukan</h1>
+    <p>Halaman yang kamu tuju sudah dipindah atau tidak ada.</p>
+    <a href="/index.html"><i data-ico="arrow-left" data-size="16"></i> Kembali ke Warung Mami</a>
+  </div>
+  <script src="/js/icons.js"></script>
+</body>
+</html>

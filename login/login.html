@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | Warung Mami</title>
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/login/login.css" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <img src="/asset/logo_foxnime.png" alt="Warung Mami" />
+        <h1>KEDAI TERA ES</h1>
+        <p>Masuk untuk memesan minuman &amp; makanan favoritmu</p>
+      </div>
+
+      <div class="tabs">
+        <button id="tabLogin" class="tab active" type="button">Masuk</button>
+        <button id="tabRegister" class="tab" type="button">Daftar</button>
+      </div>
+
+      <!-- ===== Form Login ===== -->
+      <form id="loginForm" class="auth-form" novalidate>
+        <label>Email
+          <input type="email" id="loginEmail" placeholder="email@contoh.com" autocomplete="email" required />
+        </label>
+        <label>Password
+          <span class="pw-wrap">
+            <input type="password" id="loginPassword" placeholder="Masukkan password" autocomplete="current-password" required />
+            <button type="button" class="pw-toggle" data-pw-toggle="loginPassword" aria-label="Tampilkan password">
+              <i data-ico="eye"></i>
+            </button>
+          </span>
+        </label>
+        <p class="form-error" id="loginError"></p>
+        <button type="submit" class="btn-primary" id="loginBtn">Masuk</button>
+      </form>
+
+      <!-- ===== Form Register ===== -->
+      <form id="registerForm" class="auth-form hidden" novalidate>
+        <label>Nama lengkap
+          <input type="text" id="regName" placeholder="Nama Anda" autocomplete="name" required />
+        </label>
+        <label>Nomor HP
+          <input type="tel" id="regPhone" placeholder="08xxxxxxxxxx" autocomplete="tel" />
+        </label>
+        <label>Email
+          <input type="email" id="regEmail" placeholder="email@contoh.com" autocomplete="email" required />
+        </label>
+        <label>Password
+          <span class="pw-wrap">
+            <input type="password" id="regPassword" placeholder="Minimal 6 karakter" autocomplete="new-password" required />
+            <button type="button" class="pw-toggle" data-pw-toggle="regPassword" aria-label="Tampilkan password">
+              <i data-ico="eye"></i>
+            </button>
+          </span>
+        </label>
+        <p class="form-error" id="regError"></p>
+        <button type="submit" class="btn-primary" id="regBtn">Daftar</button>
+      </form>
+
+      <a class="back-home" href="/index.html"><i data-ico="arrow-left"></i> Kembali ke toko</a>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/icons.js"></script>
+  <script src="/login/login.js"></script>
+</body>
+</html>

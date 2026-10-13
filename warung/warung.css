@@ -1,0 +1,496 @@
+/* =========================================================
+   warung.css — halaman utama toko
+   ========================================================= */
+
+body {
+  overflow-x: hidden;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* ===== Header ===== */
+header {
+  background: var(--brand);
+  color: #fff;
+  padding: 18px 20px;
+  border-radius: 0 0 14px 14px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(30, 25, 15, .12);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+/* ===== Logo ===== */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo img {
+  width: 54px;
+  height: 54px;
+  border-radius: var(--r-sm);
+  object-fit: cover;
+}
+
+.logo h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+
+/* ===== Navbar ===== */
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hp {
+  display: none;
+}
+
+.navbar a {
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  transition: background .2s;
+}
+
+.navbar a:hover {
+  background: rgba(255, 255, 255, .16);
+}
+
+.navbar span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.navbar input[type="text"] {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .55);
+  background: #fff;
+  color: var(--ink);
+  font-size: 14px;
+  min-width: 160px;
+}
+
+.navbar input[type="text"]::placeholder {
+  color: var(--muted);
+}
+
+.navbar input[type="text"]:focus {
+  outline: 2px solid rgba(255, 255, 255, .6);
+  outline-offset: 1px;
+}
+
+/* ===== Ikon keranjang ===== */
+#cart {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--r-sm);
+  transition: background .2s;
+}
+
+#cart:hover {
+  background: rgba(255, 255, 255, .18);
+}
+
+#cart #cartCount {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #fff;
+  color: var(--brand-dk);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  padding: 4px 6px;
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+
+/* ===== Konten ===== */
+#orderStrip {
+  max-width: 1100px;
+  margin: 0 auto 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0 16px;
+}
+
+#orderStrip a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--brand-dk);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+
+#orderStrip a:hover {
+  background: var(--tint);
+  border-color: var(--brand);
+}
+
+main {
+  margin: 30px auto;
+  max-width: 1160px;
+  padding: 0 16px;
+}
+
+.main2 {
+  margin: 30px auto;
+  max-width: 1160px;
+  padding: 0 16px;
+}
+
+h2.judul {
+  text-align: center;
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 34px;
+}
+
+h2.judul::after {
+  content: "";
+  display: block;
+  width: 36px;
+  height: 3px;
+  background: var(--brand);
+  border-radius: 2px;
+  margin: 8px auto 0;
+}
+
+/* ===== Kartu produk ===== */
+.produk {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 12px;
+  text-align: center;
+  transition: box-shadow .2s, transform .2s;
+  height: 100%;
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--shadow);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: var(--r-sm);
+}
+
+.card h3 {
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.card p {
+  margin: 6px 0 10px;
+  color: var(--brand-dk);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.card>div:not(.card-media) {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.card button {
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background .2s;
+}
+
+.card button:hover {
+  background: var(--brand-dk);
+}
+
+.card button:disabled {
+  background: var(--line);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.card a[aria-label] {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tint);
+  border: 1px solid var(--line);
+  color: var(--brand-dk);
+  border-radius: var(--r-sm);
+  transition: background .2s, color .2s;
+}
+
+.card a[aria-label]:hover {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.card-media {
+  position: relative;
+  width: 100%;
+}
+
+.cat-chip {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  letter-spacing: .3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .18);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .15);
+}
+
+.stok-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+}
+
+.stok-badge.menipis {
+  color: var(--st-pending);
+  border-color: var(--st-pending);
+}
+
+.stok-badge.habis {
+  color: #fff;
+  background: var(--st-cancelled);
+  border-color: var(--st-cancelled);
+}
+
+/* ===== Pil filter kategori ===== */
+.cat-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 18px;
+}
+
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  color: var(--ink);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: var(--shadow);
+}
+
+.cat-pill i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--pill, var(--brand));
+}
+
+.cat-pill:hover {
+  border-color: var(--pill, var(--brand));
+  transform: translateY(-1px);
+}
+
+.cat-pill.active {
+  background: var(--pill, var(--brand));
+  border-color: var(--pill, var(--brand));
+  color: #fff;
+  box-shadow: var(--shadow-md);
+}
+
+.cat-pill.active i {
+  background: #fff;
+}
+
+/* Judul section dengan aksen warna kategori */
+.cat-judul {
+  border-left: 6px solid var(--jc, var(--brand));
+  padding-left: 12px;
+}
+
+.loading-box {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+  width: 100%;
+}
+
+/* ===== Footer ===== */
+footer {
+  background: var(--brand);
+  color: #fff;
+  padding: 16px;
+  margin-top: 44px;
+  border-radius: 14px 14px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+/* ===== Tampilan HP ===== */
+@media (max-width: 768px) {
+  .logo h1 {
+    font-size: 20px;
+  }
+
+  .navbar a,
+  .navbar button,
+  .navbar span:not(.menu-toggle):not(.search-toggle),
+  .navbar input {
+    display: none !important;
+  }
+
+  .menu-toggle,
+  .search-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+  }
+
+  .menu-toggle:hover,
+  .search-toggle:hover {
+    background: rgba(255, 255, 255, .16);
+  }
+
+  .hp {
+    display: flex;
+    gap: 10px;
+    color: #fff;
+  }
+
+  .navbar {
+    order: 3;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    flex: none;
+  }
+
+  /* MENU AKTIF */
+  .navbar.active a,
+  .navbar.active button,
+  .navbar.active span:not(.menu-toggle):not(.search-toggle) {
+    display: flex !important;
+    margin: 6px 0;
+    width: 100%;
+  }
+
+  /* SEARCH AKTIF */
+  .navbar.search-active input {
+    display: block !important;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .produk {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  .card img {
+    height: 130px;
+  }
+
+  main,
+  .main2 {
+    margin: 20px auto;
+  }
+
+  h2.judul {
+    font-size: 19px;
+  }
+}

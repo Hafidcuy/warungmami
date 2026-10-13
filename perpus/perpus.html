@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perpustakaan | Warung Mami</title>
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/perpus/perpus.css" />
+  <style>
+    .logo a { display: inline-flex; align-items: center; justify-content: center; color: inherit; }
+    .navbar span { display: inline-flex; align-items: center; gap: 6px; }
+    .navbar .hp-btn,
+    .hp span {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .search-toggle,
+    .menu-toggle { line-height: 1; }
+    .nav-user { display: inline-flex; align-items: center; gap: 6px; }
+    .manut a { display: inline-flex; align-items: center; gap: 6px; }
+    footer { display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .empty-search {
+      grid-column: 1 / -1;
+      text-align: center;
+      color: #888;
+      padding: 40px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .empty-search .ico { width: 34px; height: 34px; }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">
+      <img src="/asset/logo_foxnime.png" alt="logo" />
+      <h1>KEDAI TERA ES</h1>
+    </div>
+    
+    <nav class="navbar">
+      <a href="/index.html">Home</a>
+      <a href="/perpus/perpus.html"><abbr style="text-decoration: none; border-radius: 5px;"
+          title="Sambil Menunggu Pesanan Sampai Silahkan Menikmati list Comic Yang Kami Sediakan Di Sini">Perpustakaan</abbr></a>
+      <a href="/account/account.html">Account</a>
+      <span class="nav-user"><i data-ico="user"></i> <b id="navUsername"></b></span>
+      <button onclick="logout()"><i data-ico="logout"></i> Logout</button>
+      <input type="text" id="searchInput" placeholder="Cari..." aria="search" />
+    </nav>
+
+    <div class="header-actions">
+      <div class="hp">
+        <span class="search-toggle" role="button" tabindex="0" aria-label="Cari"><i data-ico="search"></i></span>
+        <span class="menu-toggle" role="button" tabindex="0" aria-label="Menu"><i data-ico="dots"></i></span>
+      </div>
+      <p id="cart">
+        <a href="/keranjang/keranjang.html" aria-label="Keranjang belanja"><span data-ico="cart"></span></a>
+        <span id="cartCount">0</span>
+      </p>
+    </div>
+  </header>
+
+  <h2 class="judul">Perpustakaan</h2>
+
+  <div class="list">
+    <div class="rpl">
+      <div class="hilang">
+        <img src="/asset/The_Angel_Next_Door_Spoils_Me_Rotten_volume_1_cover.jpg" />
+      </div>
+      <div class="manut" data-comic="otonari no tenshi sama">
+        <p>otonari no tenshi sama</p>
+        <a href="https://komiku.id/manga/otonari-no-tenshi-sama-ni-itsunomanika-dame-ningen-ni-sareteita-ken/">baca
+          sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img src="/asset/Shiotaiō_no_Satō-san_ga_Ore_ni_Dake_Amai_LN_volume_1_cover.jpg" />
+      </div>
+      <div class="manut" data-comic="shiotaiou no sato san ga ore ni dake amai">
+        <p>shiotaiou no sato san ga ore ni dake amai</p>
+        <a href="https://komiku.id/manga/shiotaiou-no-sato-san-ga-ore-ni-dake-amai/">baca sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img src="/asset/Yozakura-san_Chi_no_Daisakusen_Vol_1.jpg" />
+      </div>
+      <div class="manut" data-comic="mission yozakura family">
+        <p>mission yozakura family</p>
+        <a href="https://komiku.id/manga/mission-yozakura-family/">baca sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img src="/asset/G7FeMvdacAA7QIB.jpg" />
+      </div>
+      <div class="manut" data-comic="boku no kokoro no yabai yatsu">
+        <p>boku no kokoro no yabai yatsu</p>
+        <a href="https://komiku.id/manga/boku-no-kokoro-no-yabai-yatsu/">baca sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img src="/asset/images.jpeg" />
+      </div>
+      <div class="manut" data-comic="tokidoki bosotto roshiago de dereru tonari no alya san">
+        <p>tokidoki bosotto roshiago de dereru tonari no alya san</p>
+        <a href="https://komiku.id/manga/tokidoki-bosotto-roshiago-de-dereru-tonari-no-alya-san/">baca sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img src="/asset/Cover_Art_Komi-san_wa,_Komyushou_desu_Vol_1.jpg" />
+      </div>
+      <div class="manut" data-comic="komi san wa komyushou desu">
+        <p>komi san wa komyushou desu</p>
+        <a href="https://komiku.id/manga/komi-san-wa-komyushou-desu/">baca sekarang</a>
+      </div>
+    </div>
+
+    <div class="rpl">
+      <div class="hilang">
+        <img src="/asset/images (1).jpeg" />
+      </div>
+      <div class="manut" data-comic="kanojo okarishimasu">
+        <p>kanojo okarishimasu</p>
+        <a href="https://komiku.id/manga/kanojo-okarishimasu/">baca sekarang</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span data-ico="home"></span> Programmed By Hafid
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/icons.js"></script>
+  <script src="/perpus/perpus.js"></script>
+</body>
+
+</html>

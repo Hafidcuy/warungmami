@@ -1,0 +1,28 @@
+# Dependensi
+node_modules/
+
+# Database (dibuat otomatis saat pertama jalan)
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# Foto profil yang diunggah user (jangan ikut ke repo)
+uploads/avatars/*
+!uploads/avatars/.gitkeep
+
+# Rahasia / environment
+.env
+.env.*
+!.env.example
+
+# Log proses (PM2 & sejenisnya)
+*.log
+logs/
+.pm2/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keranjang | Warung Mami</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="keranjang.css">
+<style>
+  a.back { display:inline-flex; align-items:center; gap:6px; margin:16px 20px 0; color:var(--brand-dk); font-weight:600; text-decoration:none; }
+  a.back:hover { text-decoration:underline; }
+  .empty-cart { background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:40px 20px; text-align:center; color:var(--muted); box-shadow:var(--shadow); }
+  .empty-cart i { font-size:40px; color:#d9d4cb; display:block; margin-bottom:10px; }
+  .cart-qty button { background:var(--brand); color:#fff; border:none; width:30px; height:30px; border-radius:var(--r-sm); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+  .cart-qty button:hover { background:var(--brand-dk); }
+  .cart-qty span { display:inline-block; min-width:32px; text-align:center; }
+  .cart-del { background:#fdeaea; color:#c00; border:none; border-radius:var(--r-sm); padding:6px 10px; cursor:pointer; display:inline-flex; align-items:center; }
+  .cart-del:hover { background:#f8d7da; }
+  .confirm-box { background:var(--tint); border:1px solid #f2e3c6; border-radius:var(--r); padding:14px 16px; margin:4px 0 10px; font-size:14px; display:flex; flex-direction:column; gap:8px; }
+  .confirm-row { display:flex; justify-content:space-between; gap:10px; }
+  .confirm-row span { color:var(--muted); font-size:13px; }
+  .confirm-row b { color:var(--ink); font-weight:600; text-align:right; word-break:break-word; }
+  .confirm-warn { background:#fff3cd; border:1px solid #ffeeba; border-radius:var(--r); padding:12px; color:#856404; font-size:13.5px; margin:4px 0 10px; display:flex; flex-direction:column; gap:8px; }
+  .confirm-warn a { color:var(--brand-dk); font-weight:700; text-decoration:underline; }
+  .checkout-form { background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:20px; display:flex; flex-direction:column; gap:12px; box-shadow:var(--shadow); }
+  .checkout-form h3 { margin-bottom:4px; display:flex; align-items:center; gap:8px; font-weight:600; }
+  .checkout-form label { display:flex; flex-direction:column; gap:5px; font-size:13px; font-weight:600; color:var(--muted); }
+  .checkout-form input, .checkout-form textarea { padding:10px 12px; border:1px solid var(--line); background:#fcfbf9; border-radius:var(--r-sm); font-size:14px; font-family:inherit; outline:none; }
+  .checkout-form input:focus, .checkout-form textarea:focus { border-color:var(--brand); background:#fff; box-shadow:0 0 0 3px rgba(234,152,0,.15); }
+  .form-error { color:#d33; font-size:13px; min-height:16px; }
+  .login-note { background:var(--tint); border:1px solid #f2e3c6; border-radius:var(--r); padding:12px; font-size:14px; margin:10px 0; }
+  .login-note a { color:var(--brand-dk); font-weight:600; }
+  #successBox { background:#eafbe7; border:1px solid #a4dfa0; border-radius:var(--r-lg); padding:30px; text-align:center; }
+  #successBox i { font-size:46px; color:#28a745; }
+  #successBox .code { font-size:20px; font-weight:700; color:#2c7a2c; margin:10px 0; }
+  #successBox a.btn { display:inline-flex; align-items:center; gap:6px; margin:6px; padding:10px 18px; background:var(--brand); color:#fff; border-radius:var(--r-sm); text-decoration:none; font-weight:600; }
+  #successBox a.btn:hover { background:var(--brand-dk); }
+  #successBox a.btn.alt { background:#fff; color:var(--brand-dk); border:1px solid var(--brand); }
+  #successBox a.btn.alt:hover { background:var(--tint); }
+  .btn-primary { display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><i data-ico="cart"></i> Keranjang Saya</h1>
+</header>
+
+<a class="back" href="/index.html"><i data-ico="arrow-left"></i> Lanjut belanja</a>
+
+<main id="mainGrid">
+
+  <div class="cart-container" id="cartContainer">
+    <!-- Item muncul dari JS -->
+  </div>
+
+  <div class="checkout-side" id="checkoutSide">
+    <div class="summary">
+      <h2>Ringkasan Belanja</h2>
+      <div class="row">
+        <span>Subtotal</span>
+        <b id="subtotal">Rp0</b>
+      </div>
+      <div class="row" id="discountRow" style="display:none;color:var(--st-ok);">
+        <span>Diskon Voucher</span>
+        <b id="discountVal">-Rp0</b>
+      </div>
+      <div class="row" style="flex-direction:column;align-items:stretch;gap:6px;" id="areaRow">
+        <span style="font-size:13px;color:var(--muted);">Wilayah Pengantaran</span>
+        <select id="areaSelect" aria-label="Pilih wilayah pengantaran"
+          style="padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-sm);font-size:13px;background:#fff;font-family:inherit;outline:none;cursor:pointer;"></select>
+        <small id="areaNote" style="font-size:12px;color:var(--muted);"></small>
+      </div>
+      <div class="row" id="ongkirRow">
+        <span>Biaya Antar <small id="ongkirNote" style="color:var(--muted);font-weight:400;"></small></span>
+        <b id="ongkirVal">Rp0</b>
+      </div>
+      <div class="row total">
+        <span>Total</span>
+        <b id="total">Rp0</b>
+      </div>
+      
+      <!-- Box Voucher -->
+      <div class="voucher-box" style="margin:14px 0 6px;">
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="voucherCode" placeholder="Kode Voucher" style="flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r-sm);font-size:13px;text-transform:uppercase;outline:none;" />
+          <button type="button" id="applyVoucherBtn" style="background:var(--brand);color:#fff;border:none;padding:8px 12px;border-radius:var(--r-sm);font-weight:600;font-size:13px;cursor:pointer;">Gunakan</button>
+        </div>
+        <div id="voucherMsg" style="font-size:12px;margin-top:6px;min-height:16px;"></div>
+      </div>
+
+      <div id="loginNote"></div>
+      <button id="checkoutBtn">Checkout</button>
+    </div>
+  </div>
+
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/icons.js"></script>
+<script src="keranjang.js"></script>
+
+</body>
+</html>

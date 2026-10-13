@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1, maximum-scale=2, user-scalable=no" />
+  <title>Warung Mami</title>
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/warung/warung.css" />
+  <style>
+    .navbar .nav-btn {
+      background: #fff;
+      color: var(--brand-dk) !important;
+      border: none;
+      padding: 7px 15px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      box-shadow: var(--shadow);
+    }
+    .navbar .nav-btn:hover { background: var(--tint); }
+    .card.sold-out { opacity: .5; pointer-events: none; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">
+      <img src="/asset/logo_foxnime.png" alt="logo" />
+      <h1>KEDAI TERA ES</h1>
+    </div>
+
+    <nav class="navbar">
+      <a href="/index.html">Home</a>
+      <a href="/perpus/perpus.html"><abbr style="text-decoration: none; border-radius: 5px;"
+          title="Sambil Menunggu Pesanan Sampai Silahkan Menikmati list Comic Yang Kami Sediakan Di Sini">Perpustakaan</abbr></a>
+      <a href="/account/account.html">Account</a>
+      <span id="navRole"></span>
+      <span><i data-ico="user"></i> <b id="navUsername"></b></span>
+      <span id="navAuth"></span>
+      <input type="text" id="searchInput" placeholder="Cari..." />
+    </nav>
+
+    <div class="header-actions">
+      <div class="hp">
+        <span class="search-toggle" id="searchToggle"><i data-ico="search"></i></span>
+        <span class="menu-toggle" id="menuToggle"><i data-ico="dots"></i></span>
+      </div>
+      <p id="cart">
+        <a href="/keranjang/keranjang.html" aria-label="Keranjang"><i data-ico="cart"></i></a>
+        <span id="cartCount">0</span>
+      </p>
+    </div>
+  </header>
+
+  <div id="orderStrip"></div>
+
+  <!-- Promo / Voucher Banner -->
+  <div class="promo-container" id="promoContainer" style="max-width:1160px;margin:0 auto 20px;padding:0 16px;display:none;">
+    <div style="background:linear-gradient(135deg, #fff7ea 0%, #fff 100%);border:1px solid #f2e3c6;border-radius:var(--r);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:var(--shadow);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="background:var(--brand);color:#fff;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;">
+          🎉
+        </div>
+        <div>
+          <h4 style="margin:0;font-size:15px;color:var(--ink);">Kupon Diskon Spesial Hari Ini!</h4>
+          <p id="promoText" style="margin:2px 0 0;font-size:13px;color:var(--muted);">Gunakan voucher untuk belanja lebih hemat.</p>
+        </div>
+      </div>
+      <div id="promoTags" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <!-- Tag kupon muncul di sini -->
+      </div>
+    </div>
+  </div>
+
+  <div id="section">
+    <!-- Bar filter kategori berwarna (diisi JS) -->
+    <div class="cat-filter" id="catFilter"></div>
+    <!-- Section per kategori (diisi JS) -->
+    <div id="catSections">
+      <div class="loading-box">Memuat produk...</div>
+    </div>
+  </div>
+
+  <footer>
+    <span data-ico="home"></span>
+    © Warung Mami — Kedai Tera Es · Programmed By Hafid
+  </footer>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/icons.js"></script>
+  <script src="/warung/scriptwarung.js"></script>
+  <script>
+    // ====== Render produk dari database ======
+    let CAT_LIST = []; // [{slug,nama,warna}]
+
+    function chipColorOf(cat) {
+      const c = CAT_LIST.find((x) => x.slug === cat);
+      return c ? c.warna : "var(--brand)";
+    }
+    function chipLabelOf(cat) {
+      const c = CAT_LIST.find((x) => x.slug === cat);
+      return c ? c.nama : cat;
+    }
+
+    function cardHTML(p) {
+      const harga = rupiah(p.price);
+      const warna = chipColorOf(p.category);
+      const label = chipLabelOf(p.category);
+      const stok = typeof p.stok === "number" ? p.stok : null;
+      const habis = !p.available || (stok !== null && stok <= 0);
+      const stokBadge =
+        stok === null
+          ? ""
+          : habis
+          ? `<span class="stok-badge habis">Habis</span>`
+          : `<span class="stok-badge ${stok <= 5 ? "menipis" : ""}">Stok ${stok}</span>`;
+
+      const chip = `<span class="cat-chip" style="background:${warna}">${escapeHtml(label)}</span>`;
+
+      if (habis) {
+        return `
+        <div class="card sold-out" data-nama="${escapeHtml(p.name)}" data-kategori="${p.category}">
+          <div class="card-media">
+            <img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" loading="lazy" />
+            ${chip}${stokBadge}
+          </div>
+          <h3>${escapeHtml(p.name)}</h3>
+          <p>Harga: ${harga}</p>
+          <div><button disabled>Habis</button></div>
+        </div>`;
+      }
+      return `
+        <div class="card" data-nama="${escapeHtml(p.name)}" data-kategori="${p.category}">
+          <div class="card-media">
+            <img src="${escapeHtml(p.image_url)}" alt="${escapeHtml(p.name)}" loading="lazy" />
+            ${chip}${stokBadge}
+          </div>
+          <h3>${escapeHtml(p.name)}</h3>
+          <p>Harga: ${harga}</p>
+          <div>
+            <a href="/keranjang/keranjang.html">
+              <button data-add="${p.id}" data-go="1">Beli</button>
+            </a>
+            <a href="#" data-add="${p.id}" aria-label="Tambah ke keranjang">
+              ${ico("cart", 17)}
+            </a>
+          </div>
+        </div>`;
+    }
+
+    // Pil filter kategori berwarna
+    function renderCatPills(products) {
+      const box = document.getElementById("catFilter");
+      const punya = new Set(products.map((p) => p.category));
+      const pills = CAT_LIST.filter((c) => punya.has(c.slug));
+      if (!pills.length) { box.innerHTML = ""; box.style.display = "none"; return; }
+      box.style.display = "flex";
+      box.innerHTML =
+        `<button class="cat-pill active" data-cat="semua">Semua</button>` +
+        pills.map((c) => `<button class="cat-pill" data-cat="${escapeHtml(c.slug)}" style="--pill:${c.warna}"><i></i>${escapeHtml(c.nama)}</button>`).join("");
+      box.querySelectorAll(".cat-pill").forEach((b) => {
+        b.addEventListener("click", () => {
+          box.querySelectorAll(".cat-pill").forEach((x) => x.classList.toggle("active", x === b));
+          paintSections(products, b.dataset.cat);
+        });
+      });
+    }
+
+    // Gambar section per kategori (heading berwarna) agar pencarian lama tetap jalan
+    function paintSections(products, filter) {
+      const wrap = document.getElementById("catSections");
+      const pills = CAT_LIST.filter((c) => products.some((p) => p.category === c.slug));
+      const target = filter === "semua" ? pills : pills.filter((c) => c.slug === filter);
+      let html = "";
+      target.forEach((c) => {
+        const items = products.filter((p) => p.category === c.slug);
+        if (!items.length) return;
+        html += `<h2 class="judul cat-judul" style="--jc:${c.warna}">${escapeHtml(c.nama)}</h2>
+        <main>
+          <section>
+            <div class="produk" id="produk-${escapeHtml(c.slug)}">${items.map(cardHTML).join("")}</div>
+          </section>
+        </main>`;
+      });
+      wrap.innerHTML = html || `<div class="loading-box">Belum ada produk di kategori ini</div>`;
+    }
+
+    async function renderProducts() {
+      try {
+        const [{ categories }, { products }] = await Promise.all([
+          API.get("/categories"),
+          API.get("/products"),
+        ]);
+        CAT_LIST = categories || [];
+        const tersedia = products.filter((p) => p.available !== false || true); // tetap tampilkan (sold-out)
+        renderCatPills(tersedia);
+        paintSections(tersedia, "semua");
+      } catch (err) {
+        document.getElementById("catSections").innerHTML =
+          `<div class="loading-box">Gagal memuat produk: ${escapeHtml(err.message)}<br>Pastikan server berjalan.</div>`;
+      }
+    }
+
+    // Tambah ke keranjang (delegasi event agar berlaku untuk kartu hasil render)
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-add]");
+      if (!btn) return;
+      e.preventDefault();
+      const id = parseInt(btn.dataset.add, 10);
+      API.get("/products").then(({ products }) => {
+        const p = products.find((x) => x.id === id);
+        if (!p) return;
+        addToCart(p, 1);
+        if (btn.dataset.go) setTimeout(() => (location.href = "/keranjang/keranjang.html"), 400);
+      }).catch((err) => toast(err.message, "error"));
+    });
+
+    // ====== Link cepat riwayat pesanan (kalau sudah login) ======
+    function renderOrderStrip() {
+      const strip = document.getElementById("orderStrip");
+      if (!strip) return;
+      if (CURRENT_USER) {
+        strip.innerHTML =
+          `<a href="/account/account.html#riwayat">${ico("box")} Riwayat &amp; Pesanan Saya</a>` +
+          (CURRENT_USER.role === "admin" ? `<a href="/admin/admin.html">${ico("settings")} Admin Panel</a>` : "") +
+          (CURRENT_USER.role === "courier" ? `<a href="/kurir/kurir.html">${ico("truck")} Panel Pengantar</a>` : "");
+      } else {
+        strip.innerHTML = "";
+      }
+    }
+
+    async function renderPromos() {
+      try {
+        const { vouchers } = await API.get("/vouchers/active");
+        if (!vouchers || vouchers.length === 0) return;
+        const container = document.getElementById("promoContainer");
+        const tags = document.getElementById("promoTags");
+        container.style.display = "block";
+        tags.innerHTML = vouchers.map(v => `
+          <div style="background:#fff;border:1px dashed var(--brand);padding:6px 12px;border-radius:var(--r-sm);font-size:12px;font-weight:600;color:var(--brand-dk);">
+            🎁 <span style="font-family:monospace;font-size:13px;">${escapeHtml(v.code)}</span>: ${v.is_percent ? `Diskon ${v.discount}%` : `Potongan ${rupiah(v.discount)}`}
+          </div>
+        `).join("");
+      } catch (e) {
+        // abaikan jika gagal
+      }
+    }
+
+    // ====== Mulai ======
+    initPage().then(() => {
+      renderOrderStrip();
+      renderPromos();
+    });
+    renderProducts();
+    document.addEventListener("user-ready", renderOrderStrip);
+  </script>
+</body>
+
+</html>

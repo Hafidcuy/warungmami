@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel | Warung Mami</title>
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .panel-head { flex-wrap: wrap; gap: 10px; }
+  .panel-head h2 { display: inline-flex; align-items: center; gap: 9px; }
+
+  /* Ikon kotak kecil pada kartu statistik */
+  .stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--r);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: var(--tint);
+    color: var(--brand-dk);
+    margin-bottom: 7px;
+  }
+
+  /* Titik status notifikasi */
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: #bbb; flex: none; }
+  .dot-red { background: #e74c3c; box-shadow: 0 0 0 3px rgba(231, 76, 60, .18); }
+  .dot-green { background: #2ecc71; box-shadow: 0 0 0 3px rgba(46, 204, 113, .18); }
+
+  /* Tombol aksi agar ikon sejajar teks */
+  .btn { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .btn-cancel, .btn-accept, .btn-assign { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .btn-ghost { display: inline-flex; align-items: center; gap: 7px; }
+  .assign-select { max-width: 190px; }
+  .inline-note { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+  .order-date { display: inline-flex; align-items: center; gap: 5px; }
+  .customer-box .courier-line { display: flex; align-items: center; gap: 6px; }
+
+  .courier-card b,
+  .courier-card span { display: flex; align-items: center; gap: 7px; }
+
+  .mini-btn { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+
+  .lock-icon {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: var(--tint);
+    color: var(--brand-dk);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lock-icon .ico { width: 34px; height: 34px; }
+
+  /* Pencarian pesanan */
+  .search-box {
+    position: relative;
+    flex: 1 1 200px;
+    max-width: 260px;
+    min-width: 160px;
+  }
+  .search-box .ico {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 9px 12px 9px 34px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    font-size: 13.5px;
+    outline: none;
+    background: #fff;
+  }
+  .search-box input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(234,152,0,.15); }
+
+  .btn-refresh {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    flex: none;
+  }
+  .btn-refresh:hover { border-color: var(--brand); color: var(--brand-dk); }
+  .btn-refresh.spinning .ico { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+
+  /* Aksi baris */
+  .row-actions { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+  }
+  .icon-btn:hover { border-color: currentColor; }
+  .icon-btn.ok { color: #2e9e5b; }
+  .icon-btn.bad { color: #d64545; }
+  .icon-btn.info { color: #3d7fd6; }
+
+  /* Form dalam modal (melengkapi admin.css) */
+  .modal-actions button { display: inline-flex; align-items: center; gap: 6px; }
+  .btn-save { background: var(--brand); color: #fff; border: none; padding: 9px 16px; border-radius: var(--r-sm); cursor: pointer; font-weight: 600; }
+  .btn-save:hover { background: var(--brand-dk); }
+  .btn-save:disabled { opacity: .6; cursor: default; }
+  .form-hint { color: var(--muted); font-size: 12.5px; margin: 0 0 10px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <img src="/asset/logo_foxnime.png" alt="logo">
+    <div>
+      <h1>Admin Panel</h1>
+      <p>KEDAI TERA ES · Kelola pesanan &amp; produk</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span><i data-ico="user"></i> <b id="adminName">...</b></span>
+    <a href="/index.html" class="btn-ghost"><i data-ico="home"></i> Toko</a>
+    <button class="btn-ghost" id="logoutBtn" onclick="logout()"><i data-ico="logout"></i> Logout</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== Ringkasan ===== -->
+  <section class="stats" id="stats">
+    <div class="stat-card"><span class="stat-icon" data-ico="inbox"></span><b id="stPending">-</b><small>Pesanan Baru</small></div>
+    <div class="stat-card"><span class="stat-icon" data-ico="refresh"></span><b id="stActive">-</b><small>Sedang Berjalan</small></div>
+    <div class="stat-card"><span class="stat-icon" data-ico="money"></span><b id="stToday">-</b><small>Pendapatan Hari Ini</small></div>
+    <div class="stat-card"><span class="stat-icon" data-ico="bank"></span><b id="stTotal">-</b><small>Total Pendapatan</small></div>
+    <div class="stat-card"><span class="stat-icon" data-ico="truck"></span><b id="stCouriers">-</b><small>Pengantar</small></div>
+    <div class="stat-card"><span class="stat-icon" data-ico="cup"></span><b id="stProducts">-</b><small>Produk</small></div>
+  </section>
+
+  <!-- ===== Pesanan ===== -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2><i data-ico="box"></i> Daftar Pesanan</h2>
+      <div class="search-box">
+        <i data-ico="search" data-size="15"></i>
+        <input type="search" id="orderSearch" placeholder="Cari kode / nama / HP..." aria-label="Cari pesanan">
+      </div>
+      <div class="filters" id="filters">
+        <button data-status="" class="active">Semua</button>
+        <button data-status="pending">Menunggu</button>
+        <button data-status="accepted">Diproses</button>
+        <button data-status="siap">Siap Diambil</button>
+        <button data-status="sending">Diantar</button>
+        <button data-status="delivered">Selesai</button>
+        <button data-status="cancelled">Batal</button>
+      </div>
+      <button class="btn-refresh" id="refreshBtn" title="Muat ulang" aria-label="Muat ulang"><i data-ico="refresh"></i></button>
+    </div>
+    <div id="ordersList" class="orders-list"><p class="empty">Memuat...</p></div>
+  </section>
+
+  <!-- ===== Pengantar ===== -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2><i data-ico="truck"></i> Pengantar Aktif</h2>
+      <button class="btn-primary" id="addCourierBtn"><i data-ico="user-plus"></i> Tambah Pengantar</button>
+    </div>
+    <div id="courierList" class="courier-list"><p class="empty">Memuat...</p></div>
+  </section>
+
+  <!-- ===== Produk ===== -->
+  <section class="panel">
+    <div class="panel-head">
+      <h2><i data-ico="cup"></i> Kelola Produk</h2>
+      <button class="btn-primary" id="addProductBtn"><i data-ico="plus"></i> Tambah Produk</button>
+    </div>
+    <div id="productList" class="product-list"><p class="empty">Memuat...</p></div>
+  </section>
+
+  <!-- ===== Voucher ===== -->
+  <section class="panel" id="voucherPanel">
+    <div class="panel-head">
+      <h2><i data-ico="money"></i> Voucher &amp; Promo</h2>
+      <button class="btn-primary" id="addVoucherBtn"><i data-ico="plus"></i> Tambah Voucher</button>
+    </div>
+    <p class="panel-note">Voucher yang aktif otomatis tampil di halaman utama &amp; bisa dipakai pelanggan di keranjang.</p>
+    <div id="voucherList" class="voucher-list"><p class="empty">Memuat...</p></div>
+  </section>
+
+  <!-- ===== Ongkir per Wilayah ===== -->
+  <section class="panel" id="areaPanel">
+    <div class="panel-head">
+      <h2><i data-ico="truck"></i> Ongkir per Wilayah</h2>
+      <button class="btn-primary" id="addAreaBtn"><i data-ico="plus"></i> Tambah Wilayah</button>
+    </div>
+    <p class="panel-note">Biaya antar dibedakan per wilayah/jarak. Pelanggan memilih wilayahnya saat checkout — ongkir dihitung otomatis dari pilihan ini.</p>
+    <div id="areaList" class="voucher-list"><p class="empty">Memuat...</p></div>
+  </section>
+
+</main>
+
+<!-- ===== Modal umum (detail / form) ===== -->
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/icons.js"></script>
+<script src="/admin/admin.js"></script>
+</body>
+</html>

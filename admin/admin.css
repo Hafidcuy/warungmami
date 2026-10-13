@@ -1,0 +1,265 @@
+/* =========================================================
+   admin.css — panel admin
+   ========================================================= */
+
+body { background: var(--bg); color: var(--ink); }
+
+/* ===== Topbar ===== */
+.topbar {
+  background: var(--brand);
+  color: #fff;
+  padding: 14px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(30, 25, 15, .12);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.topbar-left img { width: 44px; height: 44px; border-radius: var(--r); object-fit: cover; background: #fff; }
+.topbar-left h1 { font-size: 19px; font-weight: 600; }
+.topbar-left p { font-size: 12px; opacity: .9; }
+.topbar-right { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+
+.btn-ghost {
+  background: rgba(255, 255, 255, .22);
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: .2s;
+}
+.btn-ghost:hover { background: rgba(255, 255, 255, .34); }
+
+main { max-width: 1200px; margin: 0 auto; padding: 20px 16px 60px; }
+
+/* ===== Statistik ===== */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: var(--shadow);
+}
+.stat-icon { font-size: 20px; }
+.stat-card b { font-size: 22px; color: var(--brand-dk); }
+.stat-card small { color: var(--muted); font-size: 12px; }
+.stat-card.alert b { color: var(--st-cancelled); }
+
+/* ===== Panel ===== */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 18px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow);
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.panel-head h2 { font-size: 17px; font-weight: 600; }
+
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filters button {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: .2s;
+}
+.filters button:hover { color: var(--ink); border-color: var(--brand-lt); }
+.filters button.active { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 600; }
+
+.btn-refresh {
+  background: #fff; border: 1px solid var(--line); width: 34px; height: 34px;
+  border-radius: 50%; cursor: pointer; color: var(--muted);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.btn-refresh:hover { border-color: var(--brand); color: var(--brand-dk); }
+
+.btn-primary {
+  background: var(--brand); color: #fff; border: none;
+  padding: 9px 16px; border-radius: var(--r-sm); font-weight: 600; cursor: pointer; font-size: 14px;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-primary:hover { background: var(--brand-dk); }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+
+.empty { color: var(--muted); text-align: center; padding: 24px; font-size: 14px; }
+
+/* ===== Pesanan ===== */
+.orders-list { display: flex; flex-direction: column; gap: 14px; }
+
+.order-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; }
+.order-card.is-pending { border-left: 5px solid var(--brand); }
+.order-card.is-sending { border-left: 5px solid var(--st-sending-fg); }
+.order-card.is-siap { border-left: 5px solid var(--ungu); }
+.order-card.is-delivered { border-left: 5px solid var(--daun); opacity: .8; }
+.order-card.is-cancelled { border-left: 5px solid var(--cabai); opacity: .7; }
+.order-card.is-accepted { border-left: 5px solid var(--langit); }
+
+.order-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
+.order-code { font-weight: 700; color: var(--brand-dk); font-size: 16px; }
+.order-date { font-size: 12px; color: var(--muted); }
+.badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.badge-pending   { background: var(--st-pending-bg);   color: var(--st-pending-fg); }
+.badge-accepted  { background: var(--st-accepted-bg);  color: var(--st-accepted-fg); }
+.badge-siap      { background: var(--st-ready-bg);     color: var(--st-ready-fg); }
+.badge-sending   { background: var(--st-sending-bg);   color: var(--st-sending-fg); }
+.badge-delivered { background: var(--st-delivered-bg); color: var(--st-delivered-fg); }
+.badge-cancelled { background: var(--st-cancelled-bg); color: var(--st-cancelled-fg); }
+
+.order-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; margin-top: 12px; }
+.order-items { font-size: 14px; color: var(--muted); }
+.order-items div { display: flex; justify-content: space-between; padding: 3px 0; }
+.order-total { display: flex; justify-content: space-between; border-top: 1px dashed var(--line); padding-top: 6px; margin-top: 6px; font-weight: 700; color: var(--ink); }
+
+.customer-box { background: var(--tint); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; font-size: 13.5px; line-height: 1.7; }
+.customer-box b { font-size: 14px; }
+.customer-box .courier-line { color: var(--st-sending-fg); font-weight: 600; }
+
+.order-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+.btn { border: none; padding: 8px 14px; border-radius: var(--r-sm); cursor: pointer; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.btn-accept { background: var(--daun); color: #fff; }
+.btn-accept:hover { filter: brightness(.93); }
+.btn-ready { background: var(--ungu); color: #fff; box-shadow: 2px 2px 0 rgba(42, 26, 14, .16); }
+.btn-ready:hover { filter: brightness(.94); }
+.btn-cancel { background: #fff; color: var(--st-cancelled); border: 1px solid var(--st-cancelled-bg); }
+.btn-cancel:hover { background: var(--st-cancelled-bg); }
+.btn-detail { background: var(--tint); color: var(--ink); }
+.btn-detail:hover { background: var(--tint-2); }
+.btn-assign { background: var(--langit); color: #fff; }
+.btn-assign:hover { filter: brightness(.93); }
+
+.assign-select {
+  padding: 7px 10px; border-radius: var(--r-sm); border: 1px solid var(--line); font-size: 13px; background: #fff;
+}
+
+/* ===== Pengantar ===== */
+.courier-list { display: flex; gap: 12px; flex-wrap: wrap; }
+.courier-card {
+  background: #fff; border-radius: var(--r); padding: 14px 18px;
+  display: flex; flex-direction: column; gap: 3px; min-width: 200px;
+  border: 1px solid var(--line); box-shadow: var(--shadow);
+}
+.courier-card b { font-size: 15px; }
+.courier-card span { font-size: 13px; color: var(--muted); }
+.courier-card .busy { color: var(--st-sending-fg); font-weight: 600; }
+.courier-tools { display: flex; margin-top: 8px; gap: 6px; }
+.courier-tools .mini-btn { display: inline-flex; align-items: center; gap: 5px; }
+
+/* ===== Produk ===== */
+.product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.product-card {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 12px;
+  display: flex; gap: 10px; align-items: center;
+}
+.product-card img { width: 54px; height: 54px; border-radius: var(--r-sm); object-fit: cover; background: var(--tint); }
+.product-info { flex: 1; }
+.product-info b { font-size: 14px; display: block; }
+.product-info small { color: var(--brand-dk); font-weight: 700; }
+.product-card.out { opacity: .55; }
+.product-info .stok {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 6px;
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  background: var(--st-delivered-bg); color: var(--st-delivered-fg);
+}
+.product-info .stok.off { background: var(--st-cancelled-bg); color: var(--st-cancelled-fg); }
+.product-tools { display: flex; flex-direction: column; gap: 5px; }
+.mini-btn { border: none; padding: 5px 9px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+.mini-edit { background: var(--st-accepted-bg); color: var(--st-accepted-fg); }
+.mini-del { background: var(--st-cancelled-bg); color: var(--st-cancelled-fg); }
+.mini-avail { background: var(--st-delivered-bg); color: var(--st-delivered-fg); }
+.mini-avail.off { background: var(--st-cancelled-bg); color: var(--st-cancelled-fg); }
+
+/* ===== Modal ===== */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(30, 25, 15, .45);
+  display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px;
+}
+/* atribut [hidden] tidak menang melawan display:flex di atas, jadi dibuat eksplisit */
+.modal-backdrop[hidden] { display: none; }
+.modal {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px; width: 100%;
+  max-width: 480px; max-height: 88vh; overflow-y: auto; box-shadow: var(--shadow-md);
+}
+.modal h3 { margin-bottom: 14px; font-weight: 600; }
+.modal label { display: flex; flex-direction: column; gap: 5px; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 12px; }
+.modal input, .modal select, .modal textarea {
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); font-size: 14px; font-family: inherit; outline: none; background: var(--bg);
+}
+.modal input:focus, .modal select:focus, .modal textarea:focus { border-color: var(--brand); background: #fff; box-shadow: 0 0 0 3px rgba(242, 107, 15, .16); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+.btn-cancel-modal { background: var(--tint); color: var(--ink); border: none; padding: 9px 16px; border-radius: var(--r-sm); cursor: pointer; font-weight: 600; }
+.modal .error { color: var(--st-cancelled); font-size: 13px; min-height: 16px; margin-bottom: 6px; }
+
+/* Detail pesanan */
+.detail-list { font-size: 14px; line-height: 1.9; }
+.detail-list b { color: var(--ink); }
+
+/* Baris potongan voucher */
+.order-discount { display: flex; justify-content: space-between; font-size: 13px; color: var(--st-ok); }
+.order-discount + .order-total { margin-top: 4px; }
+
+/* ===== Voucher ===== */
+.panel-note { font-size: 13px; color: var(--muted); margin: -4px 0 12px; }
+.voucher-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.voucher-card {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 13px 15px;
+  display: flex; flex-direction: column; gap: 3px; box-shadow: var(--shadow);
+  border-left: 4px solid var(--brand);
+}
+.voucher-card.off { border-left-color: var(--line); background: var(--bg); opacity: .75; }
+.voucher-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 15px; letter-spacing: .5px;
+  color: var(--brand-dk); word-break: break-all;
+}
+.voucher-card .v-disc { font-size: 14px; font-weight: 700; color: var(--ink); }
+.voucher-card small { font-size: 12.5px; color: var(--muted); }
+.voucher-card .stok { align-self: flex-start; }
+.voucher-tools { display: flex; gap: 6px; margin-top: 8px; }
+.voucher-tools .mini-btn { display: inline-flex; align-items: center; gap: 5px; flex: 1; justify-content: center; }
+
+@media (max-width: 700px) {
+  .order-grid { grid-template-columns: 1fr; }
+  .topbar { padding: 12px 14px; }
+  .topbar-left h1 { font-size: 17px; }
+  .topbar-right { flex-wrap: wrap; justify-content: flex-end; }
+  main { padding: 16px 12px 50px; }
+  .panel { padding: 14px; }
+  .stats { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+  .product-list { grid-template-columns: 1fr; }
+  .voucher-list { grid-template-columns: 1fr; }
+  .order-card { padding: 13px; }
+  .btn { padding: 8px 12px; font-size: 13px; }
+  .modal { max-height: 92vh; padding: 18px; }
+}

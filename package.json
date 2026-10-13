@@ -1,0 +1,18 @@
+{
+  "name": "warung-mami",
+  "version": "1.0.0",
+  "description": "Web toko Warung Mami - Kedai Tera Es dengan admin panel & panel pengantar (kurir)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node server/seed.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.23.1"
+  }
+}
