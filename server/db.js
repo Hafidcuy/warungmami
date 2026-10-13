@@ -376,6 +376,25 @@ async function seed() {
   );
   for (const k of kat) await upKat.run(...k);
 
+  // Foto menu asli dari Unsplash (gambar stok langsung, aman untuk ditampilkan di katalog).
+  const menuPhotos = {
+    "Tera (es teh)": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&q=80",
+    "Good Day Freeze": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=800&q=80",
+    Milo: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=800&q=80",
+    "Pop Ice": "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=800&q=80",
+    Champion: "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=800&q=80",
+    "Susu Indomilk": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=800&q=80",
+    "Milk Tea": "https://images.unsplash.com/photo-1558857563-b371033873b8?w=800&q=80",
+    "Lemon Tea": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&q=80",
+    Nutrisari: "https://images.unsplash.com/photo-1622597467836-f3285f2131b8?w=800&q=80",
+    Kopi: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80",
+    "Pentol kecil": "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=800&q=80",
+    Tahu: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&q=80",
+    "Pentol jumbo": "https://images.unsplash.com/photo-1547592180-85f173990554?w=800&q=80",
+  };
+  const updatePhoto = await db.prepare("UPDATE products SET image_url = ? WHERE name = ?");
+  for (const [name, url] of Object.entries(menuPhotos)) await updatePhoto.run(url, name);
+
   // 4. Produk contoh (hanya bila belum ada produk sama sekali).
   const nProducts = (await db.prepare("SELECT COUNT(*) AS n FROM products").get()).n;
   const hasOriginalMenu = await db.prepare("SELECT 1 FROM products WHERE name = ? LIMIT 1").get("Tera (es teh)");
