@@ -368,10 +368,8 @@ async function seed() {
 
   // 3. Kategori bawaan (upsert per slug).
   const kat = [
-    ["minuman", "Minuman", "#2b7fd4"],
-    ["makanan", "Makanan", "#e23a2e"],
-    ["snack", "Cemilan", "#ffc53d"],
-    ["paket", "Paket Hemat", "#1f8a4c"],
+    ["minuman", "Minuman", "#b5121b"],
+    ["makanan", "Makanan", "#b5121b"],
   ];
   const upKat = await db.prepare(
     "INSERT INTO kategori (slug, nama, warna) VALUES (?, ?, ?) ON CONFLICT (slug) DO UPDATE SET nama = excluded.nama, warna = excluded.warna"
@@ -380,23 +378,26 @@ async function seed() {
 
   // 4. Produk contoh (hanya bila belum ada produk sama sekali).
   const nProducts = (await db.prepare("SELECT COUNT(*) AS n FROM products").get()).n;
-  if (!nProducts) {
+  const hasOriginalMenu = await db.prepare("SELECT 1 FROM products WHERE name = ? LIMIT 1").get("Tera (es teh)");
+  if (nProducts && !hasOriginalMenu) {
+    await db.exec("DELETE FROM products");
+    await db.exec("DELETE FROM kategori WHERE slug NOT IN ('minuman', 'makanan')");
+  }
+  if (!nProducts || !hasOriginalMenu) {
     const prods = [
-      ["Es Teh Manis", 3000, "minuman", "", "Teh manis segar dengan gula asli", 20],
-      ["Es Jeruk Segar", 5000, "minuman", "", "Jeruk peras asli, tanpa pengawet", 20],
-      ["Es Kopi Susu", 8000, "minuman", "", "Kopi robusta lokal dengan susu segar", 20],
-      ["Teh Tawar Dingin", 2000, "minuman", "", "Teh tawar dingin, pas untuk makan", 20],
-      ["Nasi Goreng Spesial", 15000, "makanan", "", "Nasi goreng telur + ayam + bakso", 20],
-      ["Mie Goreng Jawa", 13000, "makanan", "", "Mie goreng khas Jawa dengan telur", 20],
-      ["Ayam Geprek Sambal", 16000, "makanan", "", "Ayam geprek dengan sambal bawang", 20],
-      ["Nasi Ayam Penyet", 15000, "makanan", "", "Ayam penyet + sambal terasi + lalapan", 20],
-      ["Soto Ayam Lamongan", 14000, "makanan", "", "Soto ayam kuah bening dengan koya", 20],
-      ["Keripik Singkong", 5000, "snack", "", "Keripik singkong renyah gurih", 20],
-      ["Pisang Goreng", 4000, "snack", "", "Pisang goreng crispy 5 potong", 20],
-      ["Roti Bakar Coklat", 7000, "snack", "", "Roti bakar coklat keju", 20],
-      ["Tempe Mendoan", 5000, "snack", "", "Tempe mendoan 5 potong dengan sambal", 20],
-      ["Paket Hemat Nasi + Ayam", 20000, "paket", "", "Nasi + ayam geprek + es teh", 20],
-      ["Paket Hemat Mie + Es", 17000, "paket", "", "Mie goreng + es teh manis", 20],
+      ["Tera (es teh)", 2500, "minuman", "", "Es teh khas Kedai Tera", 20],
+      ["Good Day Freeze", 5000, "minuman", "", "Minuman Good Day Freeze", 20],
+      ["Milo", 4000, "minuman", "", "Minuman Milo", 20],
+      ["Pop Ice", 3000, "minuman", "", "Minuman Pop Ice", 20],
+      ["Champion", 3000, "minuman", "", "Minuman Champion", 20],
+      ["Susu Indomilk", 3000, "minuman", "", "Susu Indomilk", 20],
+      ["Milk Tea", 3000, "minuman", "", "Milk tea", 20],
+      ["Lemon Tea", 3000, "minuman", "", "Lemon tea", 20],
+      ["Nutrisari", 3000, "minuman", "", "Minuman Nutrisari", 20],
+      ["Kopi", 4000, "minuman", "", "Kopi", 20],
+      ["Pentol kecil", 500, "makanan", "", "Pentol kecil", 20],
+      ["Tahu", 500, "makanan", "", "Tahu", 20],
+      ["Pentol jumbo", 2500, "makanan", "", "Pentol jumbo", 20],
     ];
     const insP = await db.prepare("INSERT INTO products (name, price, category, image_url, deskripsi, stok) VALUES (?, ?, ?, ?, ?, ?)");
     for (const p of prods) await insP.run(...p);
