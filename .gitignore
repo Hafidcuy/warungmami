@@ -16,6 +16,9 @@ uploads/avatars/*
 .env.*
 !.env.example
 
+# Kredensial proyek Vercel CLI (jangan ikut ke repo)
+.vercel/
+
 # Log proses (PM2 & sejenisnya)
 *.log
 logs/

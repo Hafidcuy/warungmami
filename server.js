@@ -13,13 +13,17 @@ const { router: apiRouter } = require("./server/api");
 
 const app = express();
 
-// ---- Inisialisasi database (sekali saat mulai, sebelum listen) ----
+// ---- Inisialisasi database (sekali per proses, saat modul dimuat) ----
 // initSchema + seed kini async (SQLite maupun Postgres), jadi tunggu selesai dulu.
+// Dimulai sekarang juga (paralel dengan loading Express) supaya berjalan sama baiknya
+// untuk server lokal (npm start) maupun fungsi serverless Vercel (api/index.js).
 async function initDb() {
   await initSchema();
   await seed();
   console.log(`[db] Backend database: ${db.backendName}`);
 }
+const dbReady = initDb();
+dbReady.catch((err) => console.error("[db] Gagal inisialisasi database:", err && err.message));
 
 // ---- Body parser ----
 app.use(express.json({ limit: "100kb" }));
@@ -33,6 +37,11 @@ app.use((req, res, next) => {
     });
   }
   next();
+});
+
+// ---- Tunggu database siap sebelum proses request apa pun ----
+app.use((req, res, next) => {
+  dbReady.then(() => next(), next);
 });
 
 // ---- Health check (untuk pengecekan setelah deploy) ----
@@ -146,7 +155,7 @@ const EXPLICIT_PORT = !!process.env.PORT;
 function start(port, attempt = 0) {
   const server = app.listen(port, HOST, async () => {
     try {
-      await initDb();
+      await dbReady;
     } catch (err) {
       console.error("[db] Gagal inisialisasi database:", err.message);
       process.exit(1);
@@ -172,4 +181,7 @@ function start(port, attempt = 0) {
   });
 }
 
-start(PORT);
+// Vercel (serverless): api/index.js me-requires file ini dan hanya memakai `app`
+// tanpa listen. Lokal (npm start / node server.js): listen seperti biasa.
+module.exports = app;
+if (require.main === module) start(PORT);

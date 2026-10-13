@@ -194,20 +194,25 @@ router.post(
     }
 
     const filename = `u${userId}-${Date.now()}.${ext}`;
+    let url = `/uploads/avatars/${filename}`;
+    let onDisk = false;
     try {
       fs.writeFileSync(path.join(AVATAR_DIR, filename), buf);
+      onDisk = true;
     } catch (err) {
-      console.error("Gagal menyimpan avatar:", err.message);
-      return res.status(500).json({ error: "Gagal menyimpan file di server" });
+      // Filesystem read-only (mis. fungsi serverless Vercel): simpan foto
+      // sebagai data URI langsung di database supaya fitur tetap jalan.
+      const mime = ext === "jpg" ? "image/jpeg" : ext === "png" ? "image/png" : "image/webp";
+      url = `data:${mime};base64,${buf.toString("base64")}`;
+      console.warn("Folder uploads tidak bisa ditulis, avatar disimpan sebagai data URI:", err.message);
     }
 
-    const url = `/uploads/avatars/${filename}`;
     const old = await db.prepare("SELECT avatar_url FROM users WHERE id = ?").get(userId);
     try {
       await db.prepare("UPDATE users SET avatar_url = ? WHERE id = ?").run(url, userId);
     } catch (err) {
       console.error("Gagal update avatar_url:", err.message);
-      try { fs.unlinkSync(path.join(AVATAR_DIR, filename)); } catch (_) {}
+      if (onDisk) { try { fs.unlinkSync(path.join(AVATAR_DIR, filename)); } catch (_) {} }
       return res.status(500).json({ error: "Gagal menyimpan foto profil" });
     }
     removeOwnAvatarFile(old && old.avatar_url, userId);

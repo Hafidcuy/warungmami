@@ -194,9 +194,21 @@ CREATE TABLE IF NOT EXISTS kategori (
 function createSQLiteBackend() {
   const { DatabaseSync } = require("node:sqlite");
   const dataDir = path.join(__dirname, "..", "data");
-  fs.mkdirSync(dataDir, { recursive: true });
   const dbFile = process.env.SQLITE_FILE || path.join(dataDir, "warung.db");
-  const raw = new DatabaseSync(dbFile);
+  try {
+    fs.mkdirSync(dataDir, { recursive: true });
+  } catch (err) {
+    console.warn("[db] Folder data tidak bisa dibuat:", err.message);
+  }
+  let raw;
+  try {
+    raw = new DatabaseSync(dbFile);
+  } catch (err) {
+    // Filesystem read-only (mis. Vercel tanpa DATABASE_URL): pakai SQLite in-memory
+    // supaya aplikasi tetap bisa boot (data sifatnya sementara / per-proses).
+    console.warn(`[db] Tidak bisa membuka ${dbFile} (${err.message}) -> fallback SQLite in-memory.`);
+    raw = new DatabaseSync(":memory:");
+  }
   raw.exec("PRAGMA journal_mode = WAL;");
   raw.exec("PRAGMA foreign_keys = ON;");
 
