@@ -299,7 +299,19 @@
                 <button type="button" class="avatar-pick-remove" id="pfAvatarRemove" hidden>Hapus foto</button>
             </div>
         </div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:6px 0;" />
+        <p style="font-size:13px;font-weight:600;color:var(--muted);">Ganti Password <span style="font-weight:400;">(kosongkan bila tidak ingin mengganti)</span></p>
+        <label>Password lama
+            <input type="password" id="pwCurrent" placeholder="Password saat ini" autocomplete="current-password" />
+        </label>
+        <label>Password baru
+            <input type="password" id="pwNew" placeholder="Minimal 8 karakter" autocomplete="new-password" />
+        </label>
+        <label>Ulangi password baru
+            <input type="password" id="pwConfirm" placeholder="Ketik ulang password baru" autocomplete="new-password" />
+        </label>
         <p class="form-error" id="pfError"></p>
+        <p id="pwMsg" style="font-size:13px;color:#2c7a2c;min-height:16px;"></p>
         <div class="modal-actions">
             <button type="button" class="btn-cancel" id="pfCancel">Batal</button>
             <button type="button" class="btn-save" id="pfSave"><i data-ico="check"></i> Simpan</button>
