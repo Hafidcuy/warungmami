@@ -13,6 +13,32 @@ const { router: apiRouter } = require("./server/api");
 
 const app = express();
 
+// Di balik reverse proxy (Nginx / Vercel), percayai header X-Forwarded-*
+// supaya req.ip (dipakai rate limiter) berisi IP pengunjung asli.
+if (process.env.TRUST_PROXY === "1" || process.env.VERCEL) {
+  app.set("trust proxy", 1);
+}
+app.disable("x-powered-by");
+
+// ---- Header keamanan (untuk semua respons) ----
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "same-origin");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; " +
+      "script-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'; " +
+      "frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+  );
+  if (process.env.NODE_ENV === "production") {
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  }
+  next();
+});
+
 // ---- Inisialisasi database (sekali per proses, saat modul dimuat) ----
 // initSchema + seed kini async (SQLite maupun Postgres), jadi tunggu selesai dulu.
 // Dimulai sekarang juga (paralel dengan loading Express) supaya berjalan sama baiknya
@@ -21,6 +47,12 @@ async function initDb() {
   await initSchema();
   await seed();
   console.log(`[db] Backend database: ${db.backendName}`);
+  if (process.env.VERCEL && db.backendName !== "postgres") {
+    console.error(
+      "[db] PERINGATAN: di Vercel tanpa DATABASE_URL, database SQLite bersifat SEMENTARA " +
+        "(hilang setiap fungsi dimulai ulang). Set DATABASE_URL (Neon Postgres) untuk produksi."
+    );
+  }
 }
 const dbReady = initDb();
 dbReady.catch((err) => console.error("[db] Gagal inisialisasi database:", err && err.message));
@@ -45,8 +77,14 @@ app.use((req, res, next) => {
 });
 
 // ---- Health check (untuk pengecekan setelah deploy) ----
-app.get("/api/health", (req, res) => {
-  res.json({ ok: true, time: new Date().toISOString() });
+// Benar-benar menguji koneksi database, bukan sekadar prosesnya hidup.
+app.get("/api/health", async (req, res) => {
+  try {
+    await db.prepare("SELECT 1 AS one").get();
+    res.json({ ok: true, time: new Date().toISOString(), db: db.backendName });
+  } catch (err) {
+    res.status(503).json({ ok: false, error: "Database tidak bisa dijangkau" });
+  }
 });
 
 // ---- API ----
@@ -64,8 +102,24 @@ for (const layer of apiRouter.stack) {
 app.use("/api", apiRouter);
 
 // ---- Website statis ----
-// index.html ada di root, jadi jangan pakai express.static biasa
-// supaya path "keranjang/..." di dalam HTML tetap benar.
+// PENTING (keamanan): hanya file di folder PUBLIK yang boleh disajikan.
+// Versi sebelumnya menyajikan file apa pun yang ada di disk — termasuk
+// /data/warung.db (isi database: hash password + token sesi!), file server,
+// dan .env. Sekarang pakai daftar putih (allowlist) yang ketat.
+const PUBLIC_DIRS = new Set([
+  "css",
+  "js",
+  "asset",
+  "account",
+  "admin",
+  "keranjang",
+  "kurir",
+  "login",
+  "perpus",
+  "warung",
+  "uploads",
+]);
+const PUBLIC_ROOT_FILES = new Set(["index.html", "404.html", "robots.txt"]);
 const STATIC_EXT = /\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|mp3|mp4|pdf)$/i;
 
 /**
@@ -88,33 +142,54 @@ function insideProject(file) {
   return file === __dirname || file.startsWith(root);
 }
 
-app.use((req, res, next) => {
-  if (req.method !== "GET" && req.method !== "HEAD") return next();
-  if (req.path.startsWith("/api/")) return next();
-  if (STATIC_EXT.test(req.path)) {
-    const target = path.join(__dirname, decodePath(req.path));
-    if (!insideProject(target)) return next();
-    return res.sendFile(target, (err) => (err ? next() : undefined));
+/**
+ * Petakan path URL ke file publik yang BOLEH disajikan, atau null.
+ * Aturan: tanpa segmen tersembunyi (diawali titik), file root hanya yang
+ * terdaftar, dan subfolder hanya folder publik dengan ekstensi yang dikenal
+ * (html / aset statis). Folder data/, server/, node_modules/ tidak pernah lolos.
+ */
+function resolvePublicFile(decoded) {
+  const clean = decoded.replace(/^\/+/, "");
+  if (!clean) return path.join(__dirname, "index.html");
+  const segments = clean.split("/");
+  if (segments.some((s) => !s || s.startsWith("."))) return null;
+
+  const candidates = [];
+  if (segments.length === 1) {
+    const name = segments[0];
+    if (PUBLIC_ROOT_FILES.has(name)) candidates.push(path.join(__dirname, name));
+    else if (PUBLIC_ROOT_FILES.has(name + ".html")) candidates.push(path.join(__dirname, name + ".html"));
+    else return null;
+  } else {
+    if (!PUBLIC_DIRS.has(segments[0])) return null;
+    const rel = segments.join(path.sep);
+    const base = path.join(__dirname, rel);
+    candidates.push(base, base + ".html");
+    if (decoded.endsWith("/")) candidates.push(path.join(base, "index.html"));
+    // Hanya ekstensi halaman/aset yang dikenal yang boleh keluar.
+    const allowed = candidates.filter((f) => /\.html$/i.test(f) || STATIC_EXT.test(f));
+    candidates.length = 0;
+    candidates.push(...allowed);
   }
-  next();
-});
-
-// Halaman HTML: cek file -> kalau tidak ada, cek + ".html" -> fallback index
-app.use((req, res, next) => {
-  if (req.method !== "GET" && req.method !== "HEAD") return next();
-  if (req.path.startsWith("/api/")) return next();
-
-  const decoded = decodePath(req.path);
-  const candidates = [
-    path.join(__dirname, decoded),
-    path.join(__dirname, decoded + ".html"),
-  ];
-  if (decoded.endsWith("/")) candidates.push(path.join(__dirname, decoded, "index.html"));
 
   for (const file of candidates) {
-    if (insideProject(file) && fs.existsSync(file) && fs.statSync(file).isFile()) {
-      return res.sendFile(file);
-    }
+    if (insideProject(file) && fs.existsSync(file) && fs.statSync(file).isFile()) return file;
+  }
+  return null;
+}
+
+app.use((req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD") return next();
+  if (req.path.startsWith("/api/")) return next();
+
+  const file = resolvePublicFile(decodePath(req.path));
+  if (file) {
+    // Aset statis boleh di-cache browser; HTML selalu versi terbaru.
+    res.setHeader(
+      "Cache-Control",
+      /\.html$/i.test(file) ? "no-cache" : "public, max-age=86400"
+    );
+    return res.sendFile(file, (err) => (err ? next() : undefined));
   }
 
   const notFound = path.join(__dirname, "404.html");
@@ -166,7 +241,7 @@ function start(port, attempt = 0) {
     console.log(`  Bind    : ${HOST}`);
     console.log(`  Node    : ${process.version}`);
     console.log(`  Database: ${db.backendName === "postgres" ? "PostgreSQL (Neon)" : "SQLite lokal"}`);
-    console.log("  Admin   : admin@warungmami.id / admin123");
+    console.log(`  Admin   : ${process.env.ADMIN_EMAIL || "admin@warungmami.id"} (password dari env / log seed)`);
     console.log("==============================================");
   });
 
