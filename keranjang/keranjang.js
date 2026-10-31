@@ -202,6 +202,10 @@ function renderForm() {
           <span>Wilayah</span>
           <b>${escapeHtml(SELECTED_AREA ? SELECTED_AREA.nama : "-")}</b>
         </div>
+        <div class="confirm-row">
+          <span>Pembayaran</span>
+          <b>COD — bayar tunai ke kurir saat pesanan tiba</b>
+        </div>
       </div>`;
   }
 
@@ -245,7 +249,7 @@ async function submitOrder() {
 
   try {
     const items = getCart().map((i) => ({ product_id: i.id, qty: i.qty }));
-    const payload = { items, customer_name, phone, address, note };
+    const payload = { items, customer_name, phone, address, note, payment_method: "cod" };
     if (APPLIED_VOUCHER) payload.voucher_code = APPLIED_VOUCHER.code;
     if (SELECTED_AREA) payload.area_id = SELECTED_AREA.id;
     const { order } = await API.post("/orders", payload);
@@ -268,6 +272,7 @@ function showSuccess(order) {
       <h2>Pesanan berhasil dikirim!</h2>
       <div class="code">${escapeHtml(order.code)}</div>
       <p>Total belanja <b>${rupiah(order.total)}</b></p>
+      <p style="margin-top:6px;">Pembayaran: <b>COD</b> — siapkan uang tunai ${rupiah(order.total)} untuk dibayar ke kurir saat pesanan tiba.</p>
       <p style="margin-top:6px;">Status saat ini: <b>Menunggu Konfirmasi</b> dari pemilik toko.</p>
       <p style="margin-top:6px;color:#888;font-size:14px;">Pemilik toko akan mengonfirmasi lalu pesanan diantar pengantar kami.</p>
       <a class="btn" href="/account/account.html#riwayat">Lacak Pesanan</a>
