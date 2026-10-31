@@ -92,6 +92,7 @@ function priceSummaryHTML(o) {
         : ""
     }
     ${areaLine}${feeLine}
+    <div><span>Pembayaran</span><span>COD${o.status === "delivered" ? " (lunas)" : ""}</span></div>
     <div class="order-total"><span>Total</span><span>${rupiah(o.total)}</span></div>`;
 }
 
@@ -708,8 +709,8 @@ function openCourierForm() {
     <label>Nomor HP / WhatsApp
       <input type="tel" id="cPhone" placeholder="08xxxxxxxxxx" />
     </label>
-    <label>Password (min. 6 karakter)
-      <input type="password" id="cPassword" placeholder="Minimal 6 karakter" autocomplete="new-password" />
+    <label>Password (min. 8 karakter)
+      <input type="password" id="cPassword" placeholder="Minimal 8 karakter" autocomplete="new-password" />
     </label>
     <p class="error" id="cError"></p>
     <div class="modal-actions">
@@ -729,8 +730,8 @@ function openCourierForm() {
       document.getElementById("cError").textContent = "Nama, email, dan password wajib diisi";
       return;
     }
-    if (body.password.length < 6) {
-      document.getElementById("cError").textContent = "Password minimal 6 karakter";
+    if (body.password.length < 8) {
+      document.getElementById("cError").textContent = "Password minimal 8 karakter";
       return;
     }
     const btn = document.getElementById("cSave");
