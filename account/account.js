@@ -146,6 +146,7 @@ function orderCard(o) {
           : ""
       }
       <div class="order-total"><span>Total</span><span>${rupiah(o.total)}</span></div>
+      <div class="order-courier" style="color:#999;">${ico("money", 14)} Pembayaran: <b>COD</b>${o.status === "delivered" ? " (sudah dibayar ke kurir)" : " — bayar tunai ke kurir saat pesanan tiba"}</div>
       ${courier}
       <div class="order-courier" style="color:#999;">${ico("pin", 14)} ${escapeHtml(o.address)}</div>
       <div class="order-courier" style="color:#999;">${ico("truck", 14)} ${o.area_nama ? escapeHtml(o.area_nama) + " · " : ""}Biaya antar ${o.delivery_fee > 0 ? rupiah(o.delivery_fee) : "GRATIS"}</div>
@@ -447,6 +448,21 @@ function initEditProfile(currentUser) {
       const { user: updated } = await API.patch("/me", patchBody);
       currentUser = updated;
       if (patchBody.area_id) simpanAreaDipilih(patchBody.area_id);
+
+      // 1b) ganti password bila kolomnya diisi
+      const pwCurrent = document.getElementById("pwCurrent")?.value || "";
+      const pwNew = document.getElementById("pwNew")?.value || "";
+      const pwConfirm = document.getElementById("pwConfirm")?.value || "";
+      if (pwCurrent || pwNew || pwConfirm) {
+        if (!pwCurrent || !pwNew) throw new Error("Isi password lama dan password baru untuk mengganti password.");
+        if (pwNew !== pwConfirm) throw new Error("Ulangi password baru tidak sama.");
+        await API.post("/me/password", { current_password: pwCurrent, new_password: pwNew });
+        document.getElementById("pwCurrent").value = "";
+        document.getElementById("pwNew").value = "";
+        document.getElementById("pwConfirm").value = "";
+        const msg = document.getElementById("pwMsg");
+        if (msg) msg.textContent = "Password berhasil diganti. Perangkat lain sudah dikeluarkan.";
+      }
 
       // 2) baru urusan foto (upload / hapus) — gagal di sini tidak menghapus data profil
       if (newFile) {
