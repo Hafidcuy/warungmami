@@ -157,7 +157,9 @@ CREATE TABLE IF NOT EXISTS orders (
   discount INTEGER DEFAULT 0,
   voucher_code TEXT DEFAULT '',
   area_id INTEGER,
-  area_nama TEXT DEFAULT ''
+  area_nama TEXT DEFAULT '',
+  payment_method TEXT DEFAULT 'cod',
+  payment_status TEXT DEFAULT 'unpaid'
 );
 CREATE TABLE IF NOT EXISTS order_items (
   id {{ID}},
@@ -346,15 +348,45 @@ function hitungOngkirArea(area, subtotal) {
 // Dipanggil saat server boot: mengisi data dasar hanya bila belum ada,
 // jadi aman dijalankan berulang dan tidak menghapus data yang sudah diedit admin.
 async function seed() {
-  // 1. Akun admin wajib selalu ada.
-  const adminEmail = "admin@warungmami.id";
-  const admin = await db.prepare("SELECT id FROM users WHERE email = ?").get(adminEmail);
+  // 1. Akun admin wajib selalu ada — TAPI password-nya tidak boleh diketahui publik.
+  //    Urutan sumber password admin pertama:
+  //      a) env ADMIN_PASSWORD (cara yang dianjurkan untuk produksi),
+  //      b) produksi tanpa env -> password ACAK dibuat server & dicetak SEKALI di log,
+  //      c) lokal/dev saja -> "admin123" (kenyamanan pengembangan, JANGAN untuk publik).
+  const { hashPassword, verifyPassword } = require("./auth");
+  const isProduction = process.env.NODE_ENV === "production";
+  const adminEmail = String(process.env.ADMIN_EMAIL || "admin@warungmami.id").trim().toLowerCase();
+  const admin = await db.prepare("SELECT id, password_hash FROM users WHERE email = ?").get(adminEmail);
   if (!admin) {
-    const { hashPassword } = require("./auth");
-    await db
-      .prepare("INSERT INTO users (name, email, phone, address, password_hash, role) VALUES (?, ?, '', '', ?, 'admin')")
-      .run("Pemilik Toko", adminEmail, hashPassword("admin123"));
-    console.log("[seed] Akun admin dibuat: admin@warungmami.id / admin123");
+    let adminPassword = process.env.ADMIN_PASSWORD || "";
+    let generated = false;
+    if (!adminPassword && isProduction) {
+      const crypto = require("node:crypto");
+      adminPassword = crypto.randomBytes(12).toString("base64url");
+      generated = true;
+    }
+    if (!adminPassword) adminPassword = "admin123";
+    if (adminPassword.length < 8) {
+      console.error("[seed] ADMIN_PASSWORD terlalu pendek (minimal 8 karakter) — akun admin TIDAK dibuat. Perbaiki env lalu restart.");
+    } else {
+      await db
+        .prepare("INSERT INTO users (name, email, phone, address, password_hash, role) VALUES (?, ?, '', '', ?, 'admin')")
+        .run("Pemilik Toko", adminEmail, hashPassword(adminPassword));
+      if (generated) {
+        console.log("==============================================================");
+        console.log(`[seed] Akun admin dibuat: ${adminEmail}`);
+        console.log(`[seed] Password admin (dibuat acak, tampil SEKALI ini saja): ${adminPassword}`);
+        console.log("[seed] SIMPAN password ini, lalu ganti lewat Profil setelah login.");
+        console.log("==============================================================");
+      } else if (process.env.ADMIN_PASSWORD) {
+        console.log(`[seed] Akun admin dibuat dari env ADMIN_PASSWORD: ${adminEmail}`);
+      } else {
+        console.log("[seed] Akun admin DEV dibuat: admin@warungmami.id / admin123 (mode lokal — jangan dipakai di server publik)");
+      }
+    }
+  } else if (isProduction && admin.password_hash && verifyPassword("admin123", admin.password_hash)) {
+    console.error("[seed] PERINGATAN KEAMANAN: password admin masih 'admin123' yang diketahui publik!");
+    console.error("[seed] Segera login dan ganti password lewat halaman Profil.");
   }
 
   // 2. Wilayah bawaan (hanya bila tabel masih kosong).
@@ -370,6 +402,8 @@ async function seed() {
   const kat = [
     ["minuman", "Minuman", "#b5121b"],
     ["makanan", "Makanan", "#b5121b"],
+    ["snack", "Snack", "#b5121b"],
+    ["paket", "Paket", "#b5121b"],
   ];
   const upKat = await db.prepare(
     "INSERT INTO kategori (slug, nama, warna) VALUES (?, ?, ?) ON CONFLICT (slug) DO UPDATE SET nama = excluded.nama, warna = excluded.warna"
@@ -400,7 +434,7 @@ async function seed() {
   const hasOriginalMenu = await db.prepare("SELECT 1 FROM products WHERE name = ? LIMIT 1").get("Tera (es teh)");
   if (nProducts && !hasOriginalMenu) {
     await db.exec("DELETE FROM products");
-    await db.exec("DELETE FROM kategori WHERE slug NOT IN ('minuman', 'makanan')");
+    await db.exec("DELETE FROM kategori WHERE slug NOT IN ('minuman', 'makanan', 'snack', 'paket')");
   }
   if (!nProducts || !hasOriginalMenu) {
     const prods = [
@@ -423,9 +457,13 @@ async function seed() {
     console.log(`[seed] ${prods.length} produk contoh`);
   }
 
-  // 5. Voucher bawaan (hanya bila belum ada).
+  // 5. Voucher bawaan (hanya bila belum ada) — kode contoh ini diketahui publik,
+  //    jadi di produksi TIDAK dibuat otomatis kecuali SEED_VOUCHERS=1 diset sadar.
+  //    Admin bisa membuat voucher sendiri dari panel admin.
   const nVouchers = (await db.prepare("SELECT COUNT(*) AS n FROM vouchers").get()).n;
-  if (!nVouchers) {
+  if (!nVouchers && isProduction && process.env.SEED_VOUCHERS !== "1") {
+    console.log("[seed] Voucher contoh dilewati di produksi (buat lewat panel admin, atau set SEED_VOUCHERS=1)");
+  } else if (!nVouchers) {
     const insV = await db.prepare("INSERT INTO vouchers (code, discount, is_percent, min_purchase, active, deskripsi) VALUES (?, ?, ?, ?, 1, ?)");
     await insV.run("WARUNGMAMI", 20, 1, 5000, "Diskon 20% untuk semua menu");
     await insV.run("HEMAT2K", 2000, 0, 4000, "Potongan Rp2.000 minimal belanja Rp4.000");
@@ -436,11 +474,35 @@ async function seed() {
 // ---------- instance ----------
 const backendImpl = usePG ? createPgBackend() : createSQLiteBackend();
 
+/**
+ * Migrasi ringan untuk database LAMA: CREATE TABLE IF NOT EXISTS tidak
+ * menambahkan kolom baru ke tabel yang sudah ada, jadi kolom yang ditambahkan
+ * setelah rilis pertama dipasang di sini. Error "kolom sudah ada" diabaikan.
+ */
+async function migrate() {
+  const additions = [
+    "ALTER TABLE orders ADD COLUMN payment_method TEXT DEFAULT 'cod'",
+    "ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT 'unpaid'",
+  ];
+  for (const sql of additions) {
+    try {
+      await backendImpl.exec(sql);
+    } catch (err) {
+      if (!/duplicate|already exists|sudah ada/i.test(String(err && err.message))) throw err;
+    }
+  }
+}
+
+async function initSchema() {
+  await backendImpl.initSchema();
+  await migrate();
+}
+
 const db = {
   prepare: backendImpl.prepare,
   exec: backendImpl.exec,
   tx: backendImpl.tx,
-  initSchema: backendImpl.initSchema,
+  initSchema,
   backend: backendImpl.backend,
   backendName: usePG ? "postgres" : "sqlite",
 };
