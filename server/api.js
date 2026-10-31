@@ -10,15 +10,62 @@ const { db, ONGKIR, ONGKIR_GRATIS_MIN, getArea, getDefaultArea, hitungOngkirArea
 const {
   hashPassword,
   verifyPassword,
+  verifyDummy,
+  passwordError,
   setCookie,
   createSession,
   destroySession,
+  destroyOtherSessions,
   parseCookies,
   requireAuth,
   requireRole,
 } = require("./auth");
+const { createRateLimiter } = require("./rateLimit");
 
 const router = express.Router();
+
+// ---- Rate limit untuk endpoint sensitif (anti brute force & spam) ----
+const loginLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: "Terlalu banyak percobaan login. Coba lagi dalam beberapa menit.",
+});
+const registerLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  message: "Terlalu banyak pendaftaran dari jaringan ini. Coba lagi nanti.",
+});
+const voucherCheckLimiter = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: "Terlalu sering mengecek voucher. Pelan-pelan dulu ya.",
+});
+const orderLimiter = createRateLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: 60,
+  message: "Terlalu banyak pesanan dalam waktu singkat. Coba lagi nanti.",
+});
+const passwordLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: "Terlalu banyak percobaan ganti password. Coba lagi nanti.",
+});
+
+// ---- Helper validasi input ----
+/** String bersih dari input JSON: non-string dianggap tidak valid (""). */
+function cleanStr(v, maxLen = 500) {
+  if (typeof v !== "string") return "";
+  return v.trim().slice(0, maxLen);
+}
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^[0-9+\-\s()]{9,20}$/;
+/** Error yang pesannya AMAN ditampilkan ke pengguna (untuk rollback transaksi). */
+function userError(message, status = 400) {
+  const err = new Error(message);
+  err.status = status;
+  err.expose = true;
+  return err;
+}
 
 const STATUS_LABEL = {
   pending: "Menunggu Konfirmasi",
@@ -69,30 +116,38 @@ function removeOwnAvatarFile(currentUrl, userId) {
 // ============================================================
 // 1. AUTENTIKASI
 // ============================================================
-router.post("/register", async (req, res) => {
-  const { name, email, phone = "", password } = req.body || {};
+router.post("/register", registerLimiter, async (req, res) => {
+  const { phone = "", password } = req.body || {};
+  const name = cleanStr(req.body?.name, 80);
+  const email = cleanStr(req.body?.email, 120).toLowerCase();
+  const cleanPhone = cleanStr(phone, 20);
   if (!name || !email || !password) return res.status(400).json({ error: "Nama, email, dan password wajib diisi" });
-  if (String(password).length < 6) return res.status(400).json({ error: "Password minimal 6 karakter" });
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ error: "Format email tidak valid" });
+  if (name.length < 2) return res.status(400).json({ error: "Nama minimal 2 karakter" });
+  const pwErr = passwordError(password);
+  if (pwErr) return res.status(400).json({ error: pwErr });
+  if (!EMAIL_RE.test(email)) return res.status(400).json({ error: "Format email tidak valid" });
+  if (cleanPhone && !PHONE_RE.test(cleanPhone)) return res.status(400).json({ error: "Nomor HP tidak valid" });
 
-  const exists = await db.prepare("SELECT id FROM users WHERE email = ?").get(String(email).toLowerCase());
+  const exists = await db.prepare("SELECT id FROM users WHERE email = ?").get(email);
   if (exists) return res.status(409).json({ error: "Email sudah terdaftar" });
 
   const created = await db
     .prepare("INSERT INTO users (name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, 'customer') RETURNING id")
-    .get(name.trim(), String(email).toLowerCase(), phone, hashPassword(password));
+    .get(name, email, cleanPhone, hashPassword(password));
 
   const token = await createSession(created.id);
   setCookie(res, "session", token, 7 * 86400000);
-  res.status(201).json({ user: { id: created.id, name: name.trim(), email: String(email).toLowerCase(), phone, role: "customer" } });
+  res.status(201).json({ user: { id: created.id, name, email, phone: cleanPhone, role: "customer" } });
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimiter, async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: "Email dan password wajib diisi" });
 
-  const user = await db.prepare("SELECT * FROM users WHERE email = ?").get(String(email).toLowerCase());
-  if (!user || !verifyPassword(password, user.password_hash)) {
+  const user = await db.prepare("SELECT * FROM users WHERE email = ?").get(cleanStr(email, 120).toLowerCase());
+  // Waktu respons disamakan baik email terdaftar maupun tidak (anti enumerasi).
+  const ok = user ? verifyPassword(String(password), user.password_hash) : verifyDummy(password);
+  if (!user || !ok) {
     return res.status(401).json({ error: "Email atau password salah" });
   }
 
@@ -129,14 +184,14 @@ router.patch("/me", requireAuth, async (req, res) => {
 
   if (phone !== undefined) {
     const cleanPhone = String(phone).trim();
-    if (cleanPhone && !/^[0-9+\-\s()]{6,20}$/.test(cleanPhone)) {
+    if (cleanPhone && !PHONE_RE.test(cleanPhone)) {
       return res.status(400).json({ error: "Nomor HP tidak valid" });
     }
     await db.prepare("UPDATE users SET phone = ? WHERE id = ?").run(cleanPhone, user.id);
   }
 
   if (address !== undefined) {
-    const cleanAddress = String(address).trim();
+    const cleanAddress = cleanStr(address, 500);
     await db.prepare("UPDATE users SET address = ? WHERE id = ?").run(cleanAddress, user.id);
   }
 
@@ -162,12 +217,36 @@ router.patch("/me", requireAuth, async (req, res) => {
     await db.prepare("UPDATE users SET avatar_url = ? WHERE id = ?").run(cleanAvatar, user.id);
   }
 
-  if (is_ready !== undefined) {
+  // Status siap-antar hanya bermakna untuk kurir; pelanggan tidak bisa mengubahnya.
+  if (is_ready !== undefined && user.role === "courier") {
     await db.prepare("UPDATE users SET is_ready = ? WHERE id = ?").run(is_ready ? 1 : 0, user.id);
   }
 
   const updated = await db.prepare("SELECT * FROM users WHERE id = ?").get(user.id);
   res.json({ user: publicUser(updated) });
+});
+
+/**
+ * Ganti password sendiri: wajib tahu password lama. Setelah berhasil,
+ * semua sesi LAIN dicabut (perangkat lain harus login ulang).
+ */
+router.post("/me/password", passwordLimiter, requireAuth, async (req, res) => {
+  const { current_password, new_password } = req.body || {};
+  if (!current_password || !new_password) {
+    return res.status(400).json({ error: "Password lama dan password baru wajib diisi" });
+  }
+  const pwErr = passwordError(new_password);
+  if (pwErr) return res.status(400).json({ error: pwErr });
+  if (String(new_password) === String(current_password)) {
+    return res.status(400).json({ error: "Password baru harus berbeda dari password lama" });
+  }
+  const full = await db.prepare("SELECT password_hash FROM users WHERE id = ?").get(req.user.id);
+  if (!full || !verifyPassword(String(current_password), full.password_hash)) {
+    return res.status(401).json({ error: "Password lama salah" });
+  }
+  await db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hashPassword(String(new_password)), req.user.id);
+  await destroyOtherSessions(req.user.id, parseCookies(req).session);
+  res.json({ ok: true });
 });
 
 /**
@@ -297,24 +376,52 @@ async function getOrderDetail(orderId) {
   return order;
 }
 
-router.post("/orders", requireAuth, async (req, res) => {
-  const { items, customer_name, phone, address, note = "" } = req.body || {};
+router.post("/orders", orderLimiter, requireAuth, async (req, res) => {
+  const { items } = req.body || {};
+  const customer_name = cleanStr(req.body?.customer_name, 80);
+  const phone = cleanStr(req.body?.phone, 20);
+  const address = cleanStr(req.body?.address, 500);
+  const note = cleanStr(req.body?.note, 300);
 
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: "Keranjang kosong" });
   }
+  if (items.length > 50) {
+    return res.status(400).json({ error: "Terlalu banyak jenis produk dalam satu pesanan" });
+  }
   if (!customer_name || !phone || !address) {
     return res.status(400).json({ error: "Nama, nomor HP, dan alamat pengantaran wajib diisi" });
   }
+  if (customer_name.length < 2) return res.status(400).json({ error: "Nama penerima terlalu pendek" });
+  if (!PHONE_RE.test(phone)) return res.status(400).json({ error: "Nomor HP tidak valid" });
+  if (address.length < 10) return res.status(400).json({ error: "Alamat pengantaran terlalu singkat — tulis alamat lengkap supaya kurir tidak nyasar" });
 
-  // Harga SELALU diambil dari database, jangan percaya dari browser
+  // Gabungkan baris produk yang sama lebih dulu: tanpa ini, dua baris produk
+  // yang sama bisa lolos cek stok satu-satu padahal jumlahnya melebihi stok.
+  const qtyByProduct = new Map();
+  for (const it of items) {
+    const pid = parseInt(it?.product_id, 10);
+    const qty = parseInt(it?.qty, 10);
+    if (!Number.isInteger(pid) || pid < 1) {
+      return res.status(400).json({ error: "Ada produk tidak valid di keranjang" });
+    }
+    if (!Number.isInteger(qty) || qty < 1 || qty > 99) {
+      return res.status(400).json({ error: "Jumlah produk harus antara 1 dan 99" });
+    }
+    qtyByProduct.set(pid, (qtyByProduct.get(pid) || 0) + qty);
+    if (qtyByProduct.get(pid) > 99) {
+      return res.status(400).json({ error: "Jumlah satu produk maksimal 99" });
+    }
+  }
+
+  // Harga SELALU diambil dari database, jangan percaya dari browser.
+  // (Pemeriksaan stok FINAL dilakukan di dalam transaksi di bawah, atomik
+  // bersama pengurangan stoknya — cek di sini hanya untuk pesan awal.)
   const getProduct = await db.prepare("SELECT * FROM products WHERE id = ? AND available = 1");
   const lines = [];
-  for (const it of items) {
-    const qty = Math.max(1, Math.min(99, parseInt(it.qty, 10) || 0));
-    const product = await getProduct.get(parseInt(it.product_id, 10));
+  for (const [pid, qty] of qtyByProduct) {
+    const product = await getProduct.get(pid);
     if (!product) return res.status(400).json({ error: "Ada produk yang sudah tidak tersedia" });
-    // Jangan biarkan melebihi stok yang tersedia
     if (typeof product.stok === "number" && product.stok < qty) {
       return res.status(400).json({
         error: `Stok ${product.name} tinggal ${product.stok} (permintaan ${qty})`,
@@ -366,28 +473,42 @@ router.post("/orders", requireAuth, async (req, res) => {
   const total = afterDiscount + deliveryFee;
   const code = "WM-" + crypto.randomBytes(3).toString("hex").toUpperCase();
 
+  // Metode pembayaran: saat ini hanya COD (tunai, dibayar ke kurir saat
+  // pesanan tiba). Nilai lain ditolak supaya tidak ada pesanan "nyangkut"
+  // menunggu pembayaran yang memang belum didukung sistem.
+  const payment_method = cleanStr(req.body?.payment_method, 20).toLowerCase() || "cod";
+  if (payment_method !== "cod") {
+    return res.status(400).json({ error: "Metode pembayaran yang tersedia saat ini hanya COD (bayar di tempat)" });
+  }
+
   try {
     const orderId = await db.tx(async (t) => {
       const created = await t
         .prepare(
-          `INSERT INTO orders (code, user_id, customer_name, phone, address, note, subtotal, discount, voucher_code, delivery_fee, total, status, area_id, area_nama)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?) RETURNING id`
+          `INSERT INTO orders (code, user_id, customer_name, phone, address, note, subtotal, discount, voucher_code, delivery_fee, total, status, area_id, area_nama, payment_method, payment_status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, 'unpaid') RETURNING id`
         )
-        .get(code, req.user.id, customer_name.trim(), phone.trim(), address.trim(), note.trim(), subtotal, discountAmount, appliedVoucher, deliveryFee, total, area ? area.id : null, area ? area.nama : "");
+        .get(code, req.user.id, customer_name, phone, address, note, subtotal, discountAmount, appliedVoucher, deliveryFee, total, area ? area.id : null, area ? area.nama : "", payment_method);
 
       const insItem = await t.prepare(
         "INSERT INTO order_items (order_id, product_id, name, price, qty) VALUES (?, ?, ?, ?, ?)"
       );
-      const decStok = await t.prepare("UPDATE products SET stok = stok - ? WHERE id = ?");
+      // Kurangi stok SECARA ATOMIK: UPDATE hanya berhasil bila stok masih cukup.
+      // Dua pesanan bersamaan tidak bisa lagi membuat stok minus / oversell.
+      const decStok = await t.prepare("UPDATE products SET stok = stok - ? WHERE id = ? AND stok >= ?");
       for (const l of lines) {
         await insItem.run(created.id, l.product.id, l.product.name, l.product.price, l.qty);
-        await decStok.run(l.qty, l.product.id); // kurangi stok saat pesanan dibuat
+        const dec = await decStok.run(l.qty, l.product.id, l.qty);
+        if (!dec.changes) {
+          throw userError(`Stok ${l.product.name} baru saja habis — kurangi jumlahnya lalu coba lagi`);
+        }
       }
       return created.id;
     });
 
     res.status(201).json({ order: await getOrderDetail(orderId) });
   } catch (err) {
+    if (err && err.expose) return res.status(err.status || 400).json({ error: err.message });
     console.error(err);
     res.status(500).json({ error: "Gagal menyimpan pesanan" });
   }
@@ -426,12 +547,18 @@ router.post("/orders/:id/cancel", requireAuth, async (req, res) => {
   const items = await db.prepare("SELECT * FROM order_items WHERE order_id = ?").all(id);
   try {
     await db.tx(async (t) => {
+      // Ubah status DULU dengan syarat masih 'pending': bila dua permintaan
+      // batal datang bersamaan, hanya satu yang lolos — stok tidak kembali dobel.
+      const upd = await t
+        .prepare("UPDATE orders SET status='cancelled', updated_at=? WHERE id=? AND status='pending'")
+        .run(localNow(), id);
+      if (!upd.changes) throw userError("Pesanan sudah berubah status, tidak bisa dibatalkan", 409);
       const addStok = await t.prepare("UPDATE products SET stok = stok + ? WHERE id = ?");
       for (const it of items) if (it.product_id) await addStok.run(it.qty, it.product_id);
-      await t.prepare("UPDATE orders SET status='cancelled', updated_at=? WHERE id=?").run(localNow(), id);
     });
     res.json({ order: await getOrderDetail(id) });
   } catch (err) {
+    if (err && err.expose) return res.status(err.status || 400).json({ error: err.message });
     console.error(err);
     res.status(500).json({ error: "Gagal membatalkan pesanan" });
   }
@@ -445,7 +572,7 @@ router.get("/vouchers/active", async (req, res) => {
   res.json({ vouchers: rows });
 });
 
-router.post("/vouchers/check", async (req, res) => {
+router.post("/vouchers/check", voucherCheckLimiter, async (req, res) => {
   const { code, subtotal } = req.body || {};
   if (!code) return res.status(400).json({ error: "Kode voucher wajib diisi" });
 
@@ -505,6 +632,7 @@ router.post("/orders/:id/messages", requireAuth, async (req, res) => {
   const id = parseInt(req.params.id, 10);
   const { text } = req.body || {};
   if (!text || !String(text).trim()) return res.status(400).json({ error: "Pesan tidak boleh kosong" });
+  if (String(text).length > 1000) return res.status(400).json({ error: "Pesan maksimal 1.000 karakter" });
 
   const order = await db.prepare("SELECT * FROM orders WHERE id = ?").get(id);
   if (!order) return res.status(404).json({ error: "Pesanan tidak ditemukan" });
@@ -536,8 +664,10 @@ router.get("/admin/stats", requireRole("admin"), async (req, res) => {
     pending: await stat("SELECT COUNT(*) n FROM orders WHERE status='pending'"),
     active: await stat("SELECT COUNT(*) n FROM orders WHERE status IN ('pending','accepted','siap','sending')"),
     todayOrders: await stat("SELECT COUNT(*) n FROM orders WHERE created_at LIKE ?", today + "%"),
-    todayRevenue: (await db.prepare("SELECT COALESCE(SUM(total),0) n FROM orders WHERE created_at LIKE ? AND status != 'cancelled'").get(today + "%")).n,
-    totalRevenue: (await db.prepare("SELECT COALESCE(SUM(total),0) n FROM orders WHERE status != 'cancelled'").get()).n,
+    // Pendapatan = uang yang BENAR-BENAR masuk: hanya pesanan yang sudah
+    // selesai diantar (delivered). Pesanan pending/diproses belum jadi uang.
+    todayRevenue: (await db.prepare("SELECT COALESCE(SUM(total),0) n FROM orders WHERE created_at LIKE ? AND status = 'delivered'").get(today + "%")).n,
+    totalRevenue: (await db.prepare("SELECT COALESCE(SUM(total),0) n FROM orders WHERE status = 'delivered'").get()).n,
     couriers: await stat("SELECT COUNT(*) n FROM users WHERE role='courier'"),
     products: await stat("SELECT COUNT(*) n FROM products"),
     labels: STATUS_LABEL,
@@ -574,8 +704,9 @@ router.post("/admin/couriers", requireRole("admin"), async (req, res) => {
   if (!name || !email || !password) {
     return res.status(400).json({ error: "Nama, email, dan password wajib diisi" });
   }
-  if (String(password).length < 6) {
-    return res.status(400).json({ error: "Password minimal 6 karakter" });
+  const pwErr = passwordError(password);
+  if (pwErr) {
+    return res.status(400).json({ error: pwErr });
   }
 
   const cleanEmail = String(email).trim().toLowerCase();
@@ -657,17 +788,49 @@ router.patch("/admin/orders/:id", requireRole("admin"), async (req, res) => {
     if (!c) return res.status(400).json({ error: "Pengantar tidak valid" });
     await db.prepare(`${touch}, status='siap', courier_id=? WHERE id=?`).run(courier_id, id);
   } else if (action === "unassign") {
+    // Lepas pengantar hanya saat pesanan belum berangkat (accepted/siap).
+    // Pesanan yang sedang diantar / sudah selesai tidak boleh "dihidupkan" lagi.
+    if (!["accepted", "siap"].includes(order.status)) return res.status(400).json({ error: "Pengantar hanya bisa dilepas sebelum pesanan diantar" });
     await db.prepare(`${touch}, courier_id=NULL, status='accepted' WHERE id=?`).run(id);
   } else if (action === "cancel") {
     if (["delivered", "cancelled"].includes(order.status)) return res.status(400).json({ error: "Pesanan sudah final" });
-    // kembalikan stok produk saat dibatalkan
+    // Batalkan + kembalikan stok dalam SATU transaksi, dengan status dijaga
+    // di klausa WHERE supaya pembatalan ganda tidak mengembalikan stok dobel.
     const items = await db.prepare("SELECT * FROM order_items WHERE order_id = ?").all(id);
-    const addStok = await db.prepare("UPDATE products SET stok = stok + ? WHERE id = ?");
-    for (const it of items) if (it.product_id) await addStok.run(it.qty, it.product_id);
-    await db.prepare(`${touch}, status='cancelled', courier_id=NULL WHERE id=?`).run(id);
+    try {
+      await db.tx(async (t) => {
+        const upd = await t
+          .prepare(`UPDATE orders SET updated_at = ?, status='cancelled', courier_id=NULL WHERE id=? AND status NOT IN ('delivered','cancelled')`)
+          .run(localNow(), id);
+        if (!upd.changes) throw userError("Pesanan sudah berubah status", 409);
+        const addStok = await t.prepare("UPDATE products SET stok = stok + ? WHERE id = ?");
+        for (const it of items) if (it.product_id) await addStok.run(it.qty, it.product_id);
+      });
+    } catch (err) {
+      if (err && err.expose) return res.status(err.status || 400).json({ error: err.message });
+      throw err;
+    }
   } else if (action === "reopen") {
-    // kembalikan pesanan ke antrean konfirmasi
-    await db.prepare(`${touch}, status='pending', courier_id=NULL WHERE id=?`).run(id);
+    // Buka lagi HANYA dari status batal — dan stok harus dipotong ulang secara
+    // atomik, karena stoknya sudah dikembalikan saat pesanan dibatalkan.
+    if (order.status !== "cancelled") return res.status(400).json({ error: "Hanya pesanan yang dibatalkan yang bisa dibuka lagi" });
+    const items = await db.prepare("SELECT * FROM order_items WHERE order_id = ?").all(id);
+    try {
+      await db.tx(async (t) => {
+        const decStok = await t.prepare("UPDATE products SET stok = stok - ? WHERE id = ? AND stok >= ?");
+        for (const it of items) {
+          if (!it.product_id) continue;
+          const dec = await decStok.run(it.qty, it.product_id, it.qty);
+          if (!dec.changes) throw userError(`Stok ${it.name} tidak cukup untuk membuka lagi pesanan ini`);
+        }
+        await t
+          .prepare(`UPDATE orders SET updated_at = ?, status='pending', courier_id=NULL WHERE id=? AND status='cancelled'`)
+          .run(localNow(), id);
+      });
+    } catch (err) {
+      if (err && err.expose) return res.status(err.status || 400).json({ error: err.message });
+      throw err;
+    }
   } else {
     return res.status(400).json({ error: "Aksi tidak dikenal" });
   }
@@ -676,13 +839,32 @@ router.patch("/admin/orders/:id", requireRole("admin"), async (req, res) => {
 });
 
 // ---------- Kelola produk ----------
+/** Kategori valid = yang terdaftar di tabel kategori (sumber kebenaran tunggal). */
+async function categoryExists(slug) {
+  if (!slug) return false;
+  const row = await db.prepare("SELECT slug FROM kategori WHERE slug = ?").get(String(slug));
+  return !!row;
+}
+function validImageUrl(v) {
+  const s = cleanStr(v, 600);
+  return s === "" || /^https?:\/\/.+/i.test(s) || /^\/(asset|uploads)\/[\w./%()-]+$/.test(s) ? s : null;
+}
+
 router.post("/admin/products", requireRole("admin"), async (req, res) => {
-  const { name, price, category, image_url = "", deskripsi = "", stok } = req.body || {};
-  if (!name || !price || !category) return res.status(400).json({ error: "Nama, harga, kategori wajib diisi" });
-  if (!["minuman", "makanan", "snack", "paket"].includes(category)) return res.status(400).json({ error: "Kategori tidak dikenal" });
+  const { price, category, stok } = req.body || {};
+  const name = cleanStr(req.body?.name, 120);
+  const deskripsi = cleanStr(req.body?.deskripsi, 500);
+  const image_url = validImageUrl(req.body?.image_url ?? "");
+  if (!name || price === undefined || !category) return res.status(400).json({ error: "Nama, harga, kategori wajib diisi" });
+  if (!(await categoryExists(category))) return res.status(400).json({ error: "Kategori tidak dikenal" });
+  if (image_url === null) return res.status(400).json({ error: "URL gambar tidak valid" });
+  const cleanPrice = parseInt(price, 10);
+  if (!Number.isInteger(cleanPrice) || cleanPrice < 1) return res.status(400).json({ error: "Harga harus lebih dari 0" });
+  const cleanStok = stok === undefined ? 20 : parseInt(stok, 10);
+  if (!Number.isInteger(cleanStok) || cleanStok < 0 || cleanStok > 100000) return res.status(400).json({ error: "Stok tidak valid" });
   const created = await db
     .prepare("INSERT INTO products (name, price, category, image_url, deskripsi, stok) VALUES (?, ?, ?, ?, ?, ?) RETURNING id")
-    .get(String(name).trim(), Math.max(0, parseInt(price, 10) || 0), category, image_url, String(deskripsi).trim(), Math.max(0, parseInt(stok, 10) || 20));
+    .get(name, cleanPrice, category, image_url, deskripsi, cleanStok);
   res.status(201).json({ product: await db.prepare("SELECT * FROM products WHERE id=?").get(created.id) });
 });
 
@@ -692,16 +874,23 @@ router.patch("/admin/products/:id", requireRole("admin"), async (req, res) => {
   if (!p) return res.status(404).json({ error: "Produk tidak ditemukan" });
 
   const { name, price, category, image_url, available, deskripsi, stok } = req.body || {};
+  if (name !== undefined && !cleanStr(name, 120)) return res.status(400).json({ error: "Nama produk tidak boleh kosong" });
+  if (category !== undefined && !(await categoryExists(category))) return res.status(400).json({ error: "Kategori tidak dikenal" });
+  if (price !== undefined && (!Number.isInteger(parseInt(price, 10)) || parseInt(price, 10) < 1)) {
+    return res.status(400).json({ error: "Harga harus lebih dari 0" });
+  }
+  const cleanImage = image_url !== undefined ? validImageUrl(image_url) : undefined;
+  if (cleanImage === null) return res.status(400).json({ error: "URL gambar tidak valid" });
   await db.prepare(
     `UPDATE products SET name=?, price=?, category=?, image_url=?, available=?, deskripsi=?, stok=? WHERE id=?`
   ).run(
-    name !== undefined ? String(name).trim() : p.name,
-    price !== undefined ? Math.max(0, parseInt(price, 10) || 0) : p.price,
+    name !== undefined ? cleanStr(name, 120) : p.name,
+    price !== undefined ? parseInt(price, 10) : p.price,
     category !== undefined ? category : p.category,
-    image_url !== undefined ? image_url : p.image_url,
+    image_url !== undefined ? cleanImage : p.image_url,
     available !== undefined ? (available ? 1 : 0) : p.available,
-    deskripsi !== undefined ? String(deskripsi).trim() : p.deskripsi,
-    stok !== undefined ? Math.max(0, parseInt(stok, 10) || 0) : p.stok,
+    deskripsi !== undefined ? cleanStr(deskripsi, 500) : p.deskripsi,
+    stok !== undefined ? Math.max(0, Math.min(100000, parseInt(stok, 10) || 0)) : p.stok,
     id
   );
   res.json({ product: await db.prepare("SELECT * FROM products WHERE id=?").get(id) });
@@ -726,6 +915,16 @@ router.post("/admin/vouchers", requireRole("admin"), async (req, res) => {
   }
 
   const cleanCode = String(code).trim().toUpperCase();
+  if (!/^[A-Z0-9_-]{3,32}$/.test(cleanCode)) {
+    return res.status(400).json({ error: "Kode voucher hanya boleh huruf, angka, - dan _ (3–32 karakter)" });
+  }
+  const cleanDiscount = parseInt(discount, 10);
+  if (!Number.isInteger(cleanDiscount) || cleanDiscount < 1) {
+    return res.status(400).json({ error: "Nominal diskon tidak valid" });
+  }
+  if (is_percent && cleanDiscount > 100) {
+    return res.status(400).json({ error: "Diskon persen maksimal 100%" });
+  }
   const exists = await db.prepare("SELECT id FROM vouchers WHERE code = ?").get(cleanCode);
   if (exists) {
     return res.status(409).json({ error: "Kode voucher sudah digunakan" });
@@ -733,7 +932,7 @@ router.post("/admin/vouchers", requireRole("admin"), async (req, res) => {
 
   const created = await db.prepare(
     "INSERT INTO vouchers (code, discount, is_percent, min_purchase, active, deskripsi) VALUES (?, ?, ?, ?, 1, ?) RETURNING id"
-  ).get(cleanCode, Math.max(1, parseInt(discount, 10) || 0), is_percent ? 1 : 0, Math.max(0, parseInt(min_purchase, 10) || 0), String(deskripsi).trim());
+  ).get(cleanCode, cleanDiscount, is_percent ? 1 : 0, Math.max(0, parseInt(min_purchase, 10) || 0), cleanStr(deskripsi, 200));
 
   res.status(201).json({ voucher: await db.prepare("SELECT * FROM vouchers WHERE id = ?").get(created.id) });
 });
@@ -826,6 +1025,9 @@ router.patch("/admin/vouchers/:id", requireRole("admin"), async (req, res) => {
   const { active, discount, is_percent, min_purchase, deskripsi } = req.body || {};
   const nextDiscount = discount !== undefined ? Math.max(1, parseInt(discount, 10) || 0) : current.discount;
   const nextPercent = is_percent !== undefined ? (is_percent ? 1 : 0) : current.is_percent;
+  if (nextPercent && nextDiscount > 100) {
+    return res.status(400).json({ error: "Diskon persen maksimal 100%" });
+  }
   const nextMin = min_purchase !== undefined ? Math.max(0, parseInt(min_purchase, 10) || 0) : current.min_purchase;
   const nextActive = active !== undefined ? (active ? 1 : 0) : current.active;
   const nextDesc = deskripsi !== undefined ? String(deskripsi).trim() : current.deskripsi;
@@ -876,7 +1078,10 @@ router.patch("/courier/orders/:id", requireRole("courier"), async (req, res) => 
     if (order.status !== "siap" || order.courier_id) {
       return res.status(400).json({ error: "Pesanan ini sudah diambil atau belum siap" });
     }
-    await db.prepare(`${touch}, courier_id=?, status='sending' WHERE id=? AND courier_id IS NULL`).run(req.user.id, id);
+    const claimed = await db.prepare(`${touch}, courier_id=?, status='sending' WHERE id=? AND courier_id IS NULL AND status='siap'`).run(req.user.id, id);
+    if (!claimed.changes) {
+      return res.status(409).json({ error: "Pesanan ini baru saja diambil pengantar lain" });
+    }
     return res.json({ order: await getOrderDetail(id) });
   }
 
