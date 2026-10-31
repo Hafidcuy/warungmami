@@ -8,6 +8,28 @@ const crypto = require("node:crypto");
 const { db } = require("./db");
 
 const SESSION_DAYS = 7;
+const MIN_PASSWORD_LENGTH = 8;
+const MAX_PASSWORD_LENGTH = 72;
+
+/** Validasi password baru. Mengembalikan pesan error, atau null bila oke. */
+function passwordError(password) {
+  if (typeof password !== "string" || password.length < MIN_PASSWORD_LENGTH) {
+    return `Password minimal ${MIN_PASSWORD_LENGTH} karakter`;
+  }
+  if (password.length > MAX_PASSWORD_LENGTH) {
+    return `Password maksimal ${MAX_PASSWORD_LENGTH} karakter`;
+  }
+  return null;
+}
+
+/**
+ * Token sesi yang disimpan di database adalah HASH (SHA-256) dari token asli.
+ * Token asli hanya ada di cookie browser. Kalau database bocor, isinya tidak
+ * bisa dipakai langsung untuk membajak sesi orang lain.
+ */
+function hashToken(token) {
+  return crypto.createHash("sha256").update(String(token)).digest("hex");
+}
 
 // ---------- Password ----------
 function hashPassword(password) {
@@ -39,7 +61,14 @@ function parseCookies(req) {
 function setCookie(res, name, value, maxAgeMs) {
   const parts = [`${name}=${encodeURIComponent(value)}`, "Path=/", "HttpOnly", "SameSite=Lax"];
   if (maxAgeMs) parts.push(`Max-Age=${Math.floor(maxAgeMs / 1000)}`);
-  if (process.env.COOKIE_SECURE === "1") parts.push("Secure");
+  // Secure (hanya lewat HTTPS) otomatis aktif di produksi / Vercel,
+  // kecuali admin server menonaktifkannya secara eksplisit (COOKIE_SECURE=0,
+  // mis. untuk pengujian HTTP lokal di jaringan sendiri).
+  const secure =
+    process.env.COOKIE_SECURE === "1" ||
+    (process.env.COOKIE_SECURE !== "0" &&
+      (process.env.NODE_ENV === "production" || !!process.env.VERCEL));
+  if (secure) parts.push("Secure");
   res.append("Set-Cookie", parts.join("; "));
 }
 
@@ -47,12 +76,23 @@ function setCookie(res, name, value, maxAgeMs) {
 async function createSession(userId) {
   const token = crypto.randomBytes(32).toString("hex");
   const expires = new Date(Date.now() + SESSION_DAYS * 86400000).toISOString().replace("T", " ").slice(0, 19);
-  await db.prepare("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)").run(token, userId, expires);
+  await db.prepare("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)").run(hashToken(token), userId, expires);
   return token;
 }
 
 async function destroySession(token) {
-  if (token) await db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
+  if (token) await db.prepare("DELETE FROM sessions WHERE token = ?").run(hashToken(token));
+}
+
+/** Hapus semua sesi user KECUALI sesi saat ini (dipakai setelah ganti password). */
+async function destroyOtherSessions(userId, currentToken) {
+  if (currentToken) {
+    await db
+      .prepare("DELETE FROM sessions WHERE user_id = ? AND token != ?")
+      .run(userId, hashToken(currentToken));
+  } else {
+    await db.prepare("DELETE FROM sessions WHERE user_id = ?").run(userId);
+  }
 }
 
 async function getUserFromRequest(req) {
@@ -66,9 +106,10 @@ async function getUserFromRequest(req) {
          JOIN users u ON u.id = s.user_id
         WHERE s.token = ?`
     )
-    .get(token);
+    .get(hashToken(token));
   if (!row) return null;
-  if (new Date(row.expires_at.replace(" ", "T")) < new Date()) {
+  // expires_at disimpan sebagai teks UTC (dari toISOString) — parse sebagai UTC.
+  if (new Date(row.expires_at.replace(" ", "T") + "Z") < new Date()) {
     await destroySession(token);
     return null;
   }
@@ -101,13 +142,27 @@ function requireRole(...roles) {
   };
 }
 
+// Hash dummy untuk menyamakan waktu respons login saat email tidak terdaftar,
+// supaya penyerang tidak bisa menebak email mana yang terdaftar dari timing.
+let dummyHash = null;
+function verifyDummy(password) {
+  if (!dummyHash) dummyHash = hashPassword(crypto.randomBytes(16).toString("hex"));
+  verifyPassword(String(password || ""), dummyHash);
+  return false;
+}
+
 module.exports = {
   hashPassword,
   verifyPassword,
+  verifyDummy,
+  passwordError,
+  MIN_PASSWORD_LENGTH,
+  hashToken,
   parseCookies,
   setCookie,
   createSession,
   destroySession,
+  destroyOtherSessions,
   getUserFromRequest,
   requireAuth,
   requireRole,
