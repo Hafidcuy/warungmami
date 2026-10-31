@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "seed": "node server/seed.js"
+    "seed": "node server/seed.js",
+    "test": "node --test test/smoke.test.js",
+    "check": "node --check server.js && node --check server/api.js && node --check server/auth.js && node --check server/db.js && node --check server/rateLimit.js"
   },
   "engines": {
     "node": ">=22.5.0"
