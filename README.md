@@ -1,50 +1,52 @@
 # Warung Mami — Kedai Tera Es
 
-Toko online lengkap dengan **backend asli** (Node.js + Express + SQLite): belanja, checkout,
+Toko online lengkap dengan **backend asli** (Node.js + Express): belanja, checkout **COD**,
 panel admin untuk pemilik toko, dan panel pengantar untuk kurir.
-
-> Dulu masih statis/hardcoded — sekarang semua data (produk, akun, pesanan) tersimpan di database.
+Semua data (produk, akun, pesanan, stok) tersimpan di database — SQLite untuk lokal/VPS,
+atau PostgreSQL (Neon) untuk produksi serverless.
 
 ---
 
-## Cara Menjalankan
+## Cara Menjalankan (lokal)
 
-Prasyarat: **Node.js v22+** (sudah termasuk modul `node:sqlite`, tidak perlu install database apapun).
+Prasyarat: **Node.js v22.5+** (memakai modul bawaan `node:sqlite`).
 
 ```bash
-npm install      # sekali saja, untuk menginstall Express
+npm install      # sekali saja
 npm start        # jalankan server
 ```
 
-Lalu buka **http://localhost:3000** (jika port itu dipakai, server otomatis pindah ke 3001, 3002, ... — lihat di terminal).
+Lalu buka **http://localhost:3000** (bila port sibuk, server otomatis pindah ke 3001, 3002, ...).
 
 Perintah lain:
 
 ```bash
 npm run dev      # mode development (auto-reload saat file server berubah)
-npm run seed     # reset database ke data contoh (HAPUS semua pesanan & akun yang kamu buat!)
+npm test         # uji otomatis ujung-ke-ujung (memakai database sementara)
+npm run seed     # reset database ke data contoh (MENGHAPUS semua data! Di produksi butuh FORCE_SEED=1)
 ```
 
-Database tersimpan otomatis di `data/warung.db` (file SQLite). Ingin reset total? Hapus file itu lalu jalankan `npm start` lagi.
+Database lokal tersimpan otomatis di `data/warung.db` (SQLite).
 
----
+### Akun admin pertama
 
-## Akun Demo
+Saat database masih kosong, server membuat **satu akun admin**:
 
-| Peran | Email | Password | Halaman |
-|---|---|---|---|
-| Pemilik toko (admin) | `admin@warungmami.id` | `admin123` | `/admin/admin.html` |
-| Pengantar (kurir) | `kurir@warungmami.id` | `kurir123` | `/kurir/kurir.html` |
-| Pembeli | `siti@contoh.id` | `siti123` | `/account/account.html` |
+| Mode | Email | Password |
+|---|---|---|
+| Lokal / dev | `admin@warungmami.id` (atau `ADMIN_EMAIL`) | `admin123` — hanya untuk lokal |
+| Produksi (`NODE_ENV=production`) | `ADMIN_EMAIL` | isi `ADMIN_PASSWORD` di env; bila kosong, server membuat password **acak** dan mencetaknya **sekali** di log startup |
 
-Semua akun demo juga muncul otomatis sebagai tombol cepat di halaman login.
+Di produksi **tidak ada akun demo** pelanggan/kurir dan **tidak ada voucher contoh** yang dibuat otomatis
+(kode voucher contoh diketahui publik). Kurir dibuat dari panel admin, pelanggan mendaftar sendiri,
+dan voucher dibuat dari panel admin. Setelah login pertama, ganti password lewat **Profil → Ganti Password**.
 
 ---
 
 ## Alur Pesanan
 
 ```
-Pembeli checkout ──► pending (Menunggu)
+Pembeli checkout (COD) ──► pending (Menunggu)
                         │  admin klik "Terima"
                         ▼
                      accepted (Diproses) ── admin tunjuk pengantar ──┐
@@ -54,113 +56,94 @@ Pembeli checkout ──► pending (Menunggu)
                      sending (Diantar) ◄─────────────────────────────┘
                         │  kurir klik "Selesai Diantar"
                         ▼
-                     delivered (Selesai)
+                     delivered (Selesai — kurir menagih pembayaran COD)
 
-Admin juga bisa: cancel (batal) → bisa dibuka lagi (reopen).
+Admin juga bisa: cancel (stok kembali) → reopen (stok dipotong ulang).
+Pembeli bisa membatalkan sendiri selama status masih pending (stok kembali).
 ```
+
+- **Stok** dikurangi secara atomik saat pesanan dibuat — dua pesanan bersamaan tidak bisa oversell / stok minus.
+- **Harga selalu dihitung ulang server** dari database saat checkout.
+- **Pendapatan** di panel admin hanya menghitung pesanan `delivered` (uang yang benar-benar masuk).
 
 ## Halaman
 
 | Halaman | Fungsi |
 |---|---|
-| `/index.html` | Etalase produk (ambil dari API), tambah ke keranjang |
-| `/keranjang/keranjang.html` | Keranjang + form checkout (alamat, HP, catatan) |
-| `/login/login.html` | Login & register |
-| `/account/account.html` | Profil + riwayat pesanan + lacak status |
-| `/admin/admin.html` | Panel admin: statistik, kelola pesanan, pengantar, produk |
-| `/kurir/kurir.html` | Panel pengantar: tugas antar, ambil, selesai |
+| `/index.html` | Etalase produk (dari API), tambah ke keranjang |
+| `/keranjang/keranjang.html` | Keranjang + checkout COD (alamat & HP dari profil) |
+| `/login/login.html` | Login & register (password minimal 8 karakter) |
+| `/account/account.html` | Profil, ganti password, riwayat & lacak pesanan, chat |
+| `/admin/admin.html` | Panel admin: statistik, pesanan, kurir, produk, voucher, wilayah ongkir |
+| `/kurir/kurir.html` | Panel pengantar: tugas antar, ambil dari kolam, selesai |
+| `/perpus/perpus.html` | Perpustakaan bacaan sambil menunggu pesanan |
 
 ## Struktur
 
 ```
-server.js          # entry: serve situs statis + API, auto-skip port terpakai
+server.js            # entry: header keamanan, file statis (allowlist), API, auto-skip port
+api/index.js         # entry serverless Vercel (memakai app yang sama)
 server/
-  db.js            # skema SQLite + seeder (15 produk, 3 akun demo)
-  auth.js          # hash password (scrypt) + sesi cookie
-  api.js           # semua endpoint REST
-js/api.js          # helper frontend: client API, keranjang, render nav
-data/warung.db     # database (dibuat otomatis, jangan di-commit)
+  db.js              # skema + migrasi + seed; backend SQLite / Postgres dipilih dari DATABASE_URL
+  auth.js            # hash password (scrypt), sesi cookie (token disimpan sebagai hash SHA-256)
+  api.js             # semua endpoint REST + validasi input
+  rateLimit.js       # rate limiter in-memory untuk login/register/voucher/order/ganti password
+js/api.js            # helper frontend: client API, keranjang, render nav
+test/smoke.test.js   # uji otomatis (node:test, tanpa dependensi tambahan)
+data/warung.db       # database SQLite lokal (dibuat otomatis, jangan di-commit)
 ```
 
-### Catatan penting
+### Keamanan (ringkas)
 
-- **Keranjang belanja** disimpan di `localStorage` browser (hanya sementara, per-perangkat).
-  Semua data penting — produk, akun, **pesanan** — ada di **database SQLite**.
-- **Harga selalu dihitung ulang oleh server** dari database saat checkout, jadi harga di
-  browser tidak bisa dimanipulasi.
-- Password di-hash dengan `scrypt` + salt, sesi memakai token acak di cookie HttpOnly.
-- Endpoint publik (baca produk) terbuka; endpoint admin/kurir dicek peran di server.
+- Hanya file di folder publik yang disajikan web — `data/`, `server/`, `.env`, dsb **tidak bisa diunduh**
+  (sebelumnya file database sempat bisa diakses lewat URL; sudah ditutup dan diuji otomatis).
+- Password di-hash `scrypt` + salt; token sesi disimpan di database sebagai hash, cookie `HttpOnly` +
+  `SameSite=Lax` + `Secure` otomatis di produksi; header keamanan (CSP, `nosniff`, anti-clickjacking, HSTS di produksi).
+- Rate limit untuk login, register, cek voucher, pembuatan pesanan, dan ganti password.
+- Endpoint admin/kurir dicek peran di server; harga, stok, voucher, dan ongkir selalu diverifikasi ulang server.
 
-## Menjalankan lokal
+## Deploy ke Produksi
 
-```bash
-npm install
-npm start          # atau: npm run dev  (auto-reload)
-```
+Ada dua jalur yang didukung. Keduanya butuh langkah **"Go-Live"** ini:
 
-Buka `http://localhost:3000`. Database SQLite + data demo dibuat otomatis saat
-pertama dijalankan.
+1. Set `NODE_ENV=production`.
+2. Set `ADMIN_EMAIL` + `ADMIN_PASSWORD` yang kuat (atau simpan password acak dari log pertama).
+3. Login, lalu **nonaktifkan / hapus voucher contoh** bila database lama sudah terlanjur punya
+   (`WARUNGMAMI`, `HEMAT2K`) dan ganti password admin bila pernah memakai `admin123`.
+4. Uji `GET /api/health` → harus `{ "ok": true, "db": ... }`.
 
-| Akun demo | Kata sandi |
-|---|---|
-| `admin@warungmami.id` | `admin123` |
-| `kurir@warungmami.id` | `kurir123` |
-| `siti@contoh.id` | `siti123` |
+### Jalur A — Vercel + Neon Postgres (serverless)
 
-## Deploy
+1. Buat database di [Neon](https://neon.tech), salin connection string-nya.
+2. Import repo ini di Vercel, lalu di **Project Settings → Environment Variables** isi:
+   `NODE_ENV=production`, `DATABASE_URL=<connection string Neon>`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
+3. Deploy. `vercel.json` mengarahkan `/api/*` ke `api/index.js`; halaman statis disajikan CDN.
 
-Kebutuhan server:
+> ⚠️ Tanpa `DATABASE_URL`, Vercel memakai SQLite in-memory yang **hilang setiap fungsi dimulai ulang** —
+> server mencetak peringatan keras di log bila ini terjadi. Foto profil di serverless disimpan sebagai
+> data URI di database (filesystem tidak persisten).
 
-- **Node.js >= 22.5.0** (pakai modul bawaan `node:sqlite`)
-- **Disk yang persisten** — database `data/warung.db` dan foto profil
-  `uploads/avatars/` disimpan di filesystem, jadi **tidak cocok** untuk platform
-  serverless dengan filesystem read-only (Vercel / Netlify / Cloudflare Pages)
-  kecuali migrasi ke PostgreSQL.
+### Jalur B — VPS (SQLite persisten + PM2 + Nginx)
 
-### 1. Siapkan repo
+Butuh Node.js ≥ 22.5 dan disk persisten (untuk `data/warung.db` dan `uploads/avatars/`).
 
 ```bash
-git init
-git add .
-git commit -m "feat: warung mami"
-git remote add origin <url-repo-anda>
-git push -u origin main
-```
-
-File yang sengaja tidak ikut di-commit: `node_modules/`, `data/*.db`,
-`uploads/avatars/*`, `.env` (lihat `.gitignore`).
-
-### 2. Jalankan di VPS (DigitalOcean / Hetzner / Rumahweb, dst.)
-
-```bash
-# di server
-sudo apt update && sudo apt install -y git
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt install -y nodejs
 git clone <url-repo-anda> warungmami && cd warungmami
+cp .env.example .env   # lalu isi NODE_ENV, ADMIN_EMAIL, ADMIN_PASSWORD
 npm install --omit=dev
-npm start
+npm start              # cek dulu: curl http://localhost:3000/api/health
 ```
 
-Cek sehat-tidaknya server:
-
-```bash
-curl http://localhost:3000/api/health
-# {"ok":true,"time":"..."}
-```
-
-### 3. Biarkan nyala terus (PM2)
+Biarkan nyala terus dengan PM2 (`TRUST_PROXY=1` bila di balik Nginx):
 
 ```bash
 npm i -g pm2
 pm2 start ecosystem.config.cjs
 pm2 save
-pm2 startup        # ikut nyala saat server reboot
+pm2 startup
 ```
 
-### 4. Domain + HTTPS
-
-Arahkan record `A` domain ke IP VPS, lalu pasang Nginx + Certbot:
+Lalu arahkan domain (record A) ke IP VPS dan pasang Nginx + Certbot seperti contoh berikut:
 
 ```nginx
 server {
@@ -173,8 +156,7 @@ server {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
   }
-  # unggahan foto profil
-  client_max_body_size 4m;
+  client_max_body_size 4m; # unggahan foto profil
 }
 ```
 
@@ -184,14 +166,11 @@ sudo certbot --nginx -d domainanda.com
 
 ### Variabel environment
 
-| Variabel | Default | Keterangan |
-|---|---|---|
-| `PORT` | `3000` | Jika di-set, server **tidak** pindah port otomatis bila sibuk (exit 1). |
-| `HOST` | `0.0.0.0` | Alamat bind. |
-| `NODE_ENV` | — | Isi `production` di server. |
+Lihat [`.env.example`](.env.example) — semua variabel didokumentasikan di sana
+(`DATABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `PORT`, `HOST`, `COOKIE_SECURE`,
+`TRUST_PROXY`, `SEED_VOUCHERS`, `FORCE_SEED`).
 
-Contoh: `PORT=8080 NODE_ENV=production npm start`
+### Backup
 
-### Endpoint pengecekan
-
-- `GET /api/health` → `{ ok: true, time: ... }` (tanpa login)
+- **SQLite (VPS):** salin berkala file `data/warung.db` (+ folder `uploads/avatars/`).
+- **Postgres (Neon):** pakai fitur backup/branch bawaan Neon atau `pg_dump` berkala.
