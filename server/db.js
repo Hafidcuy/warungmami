@@ -258,12 +258,17 @@ function createPgBackend() {
   types.setTypeParser(20, (v) => (v === null ? null : parseInt(v, 10))); // int8 -> Number
   types.setTypeParser(1700, (v) => (v === null ? null : parseFloat(v))); // numeric -> Number
 
+  // TLS: pooler Supabase/Neon memakai rantai sertifikat sendiri. pg versi baru
+  // memperlakukan sslmode=require di URL sebagai verify-full dan MENIMPA opsi
+  // ssl eksplisit, sehingga koneksi gagal "self-signed certificate in chain".
+  // Karena itu sslmode dibuang dari URL dan mode TLS diatur eksplisit di sini:
+  // koneksi jarak jauh selalu TLS tanpa verifikasi CA (seperti niat awal),
+  // sedangkan localhost/127.0.0.1 tanpa TLS.
+  const isLocalPg = /@(localhost|127\.0\.0\.1)(:|\/)/.test(DATABASE_URL);
+  const pgUrl = DATABASE_URL.replace(/([?&])sslmode=[^&]*&?/g, "$1").replace(/[?&]$/, "");
   const pool = new Pool({
-    connectionString: DATABASE_URL,
-    // Neon wajib TLS; ?sslmode=require di URL juga cukup.
-    ssl: /sslmode=(require|allow|prefer|verify-ca|verify-full)/.test(DATABASE_URL)
-      ? { rejectUnauthorized: false }
-      : undefined,
+    connectionString: pgUrl,
+    ssl: isLocalPg ? undefined : { rejectUnauthorized: false },
   });
 
   function bind(sql) {
