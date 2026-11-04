@@ -410,21 +410,23 @@ async function seed() {
   );
   for (const k of kat) await upKat.run(...k);
 
-  // Foto menu asli dari Unsplash (gambar stok langsung, aman untuk ditampilkan di katalog).
+  // Foto menu MILIK SENDIRI di folder asset/produk (dibuat khusus untuk
+  // Warung Mami). Dulu berupa tautan panas ke foto toko/CDN pihak ketiga —
+  // rapuh (bisa mati/berubah sewaktu-waktu) dan bukan aset milik toko.
   const menuPhotos = {
-    "Tera (es teh)": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&q=80",
-    "Good Day Freeze": "https://cdn11.bigcommerce.com/s-5wf0xbtgyb/images/stencil/1280x1280/products/5716/16441/cookies_n_cream__16571.1713500284.jpg?c=2",
-    Milo: "https://www.goodnes.com/sites/g/files/jgfbjl181/files/styles/product_image/public/2024-02/milo-chocolate-flavored-energy-drink.png.webp",
-    "Pop Ice": "https://cdn11.bigcommerce.com/s-5wf0xbtgyb/images/stencil/1280x1280/products/3970/10799/05a28e341c2d13f357181fca740e8911.jpg_720x720q80__60901.1656411414.jpg?c=2",
-    Champion: "https://cdn11.bigcommerce.com/s-5wf0xbtgyb/images/stencil/1280x1280/products/8063/23289/0385e012-d16f-41fb-bbd6-c3370de41e62.jpg__71425.1740726201.jpg?c=2",
-    "Susu Indomilk": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=800&q=80",
-    "Milk Tea": "https://cdn11.bigcommerce.com/s-5wf0xbtgyb/images/stencil/1280x1280/products/964/1927/91uTUOOmLbL._SX522___74749.1548742859.jpg?c=2",
-    "Lemon Tea": "https://cdn11.bigcommerce.com/s-5wf0xbtgyb/images/stencil/1280x1280/products/8119/23501/sg-11134201-7rbku-logcbigd0zxs3e__41262.1742023384.jpg?c=2",
-    Nutrisari: "https://cdn11.bigcommerce.com/s-5wf0xbtgyb/images/stencil/1280x1280/products/5618/16101/3aa8eaf743569e44e177273483e8cb87__03596.1712544979.jpg?c=2",
-    Kopi: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80",
-    "Pentol kecil": "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=800&q=80",
-    Tahu: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=800&q=80",
-    "Pentol jumbo": "https://images.unsplash.com/photo-1547592180-85f173990554?w=800&q=80",
+    "Tera (es teh)": "/asset/produk/tera-es-teh.jpg",
+    "Good Day Freeze": "/asset/produk/good-day-freeze.jpg",
+    Milo: "/asset/produk/milo.jpg",
+    "Pop Ice": "/asset/produk/pop-ice.jpg",
+    Champion: "/asset/produk/champion.jpg",
+    "Susu Indomilk": "/asset/produk/susu-indomilk.jpg",
+    "Milk Tea": "/asset/produk/milk-tea.jpg",
+    "Lemon Tea": "/asset/produk/lemon-tea.jpg",
+    Nutrisari: "/asset/produk/nutrisari.jpg",
+    Kopi: "/asset/produk/kopi.jpg",
+    "Pentol kecil": "/asset/produk/pentol-kecil.jpg",
+    Tahu: "/asset/produk/tahu.jpg",
+    "Pentol jumbo": "/asset/produk/pentol-jumbo.jpg",
   };
   const updatePhoto = await db.prepare("UPDATE products SET image_url = ? WHERE name = ?");
   for (const [name, url] of Object.entries(menuPhotos)) await updatePhoto.run(url, name);
@@ -456,6 +458,13 @@ async function seed() {
     for (const p of prods) await insP.run(...p);
     console.log(`[seed] ${prods.length} produk contoh`);
   }
+
+  // 4b. Terapkan foto menu SETELAH produk dipastikan ada. Urutan ini
+  // penting: di database baru, update foto di langkah 3 berjalan saat
+  // tabel produk masih kosong sehingga tidak berdampak — bug lama yang
+  // membuat katalog tampil tanpa foto. Di sini foto selalu terpasang,
+  // baik untuk database baru maupun yang sudah berjalan.
+  for (const [name, url] of Object.entries(menuPhotos)) await updatePhoto.run(url, name);
 
   // 5. Voucher bawaan (hanya bila belum ada) — kode contoh ini diketahui publik,
   //    jadi di produksi TIDAK dibuat otomatis kecuali SEED_VOUCHERS=1 diset sadar.
